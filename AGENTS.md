@@ -683,4 +683,45 @@ Always create state management in this exact sequence:
   hintText: 'enter_your_email'.tr(),
   ```
 
+## 15. Session Management & Splash Screen Check Sign-In Pattern
+- **Session Storage**:
+  - Upon successful login, store both the login flag (`SessionManager.saveLoginStatus(true)`) and full session object (`SessionManager.saveUserSession(respData)`).
+- **Check Sign-In in BLoC**:
+  - The API execution BLoC (e.g. `AuthLoginBloc`) handles `AuthCheckSignInStatusEvent` by checking `SessionManager.isLoggedIn()`.
+  - If `true`, fetch `SessionManager.getUserSession()` and emit `AuthCheckSignInStatusSuccessState(resultData)`. Otherwise emit `AuthCheckSignInStatusFailureState(...)`.
+  ```dart
+  Future<Either<Failure, LoginResponse>> checkSignInStatus() async {
+    try {
+      final result = await SessionManager.isLoggedIn();
+      if (result == true) {
+        final resultData = await SessionManager.getUserSession();
+        return Right(resultData!);
+      }
+      return Left(CacheFailure(mapFailureToMessage(CacheFailure(""))));
+    } on CacheException {
+      return Left(CacheFailure(mapFailureToMessage(CacheFailure(""))));
+    }
+  }
+
+  Future _checkSignInStatus(AuthCheckSignInStatusEvent event, Emitter emit) async {
+    emit(AuthCheckSignInStatusLoadingState());
+    final result = await checkSignInStatus();
+    result.fold(
+      (l) => emit(AuthCheckSignInStatusFailureState(mapFailureToMessage(l))),
+      (r) => emit(AuthCheckSignInStatusSuccessState(r)),
+    );
+  }
+  ```
+- **Splash Screen Orchestration**:
+  - Provide `AuthLoginBloc` in `SplashScreen` and trigger `AuthCheckSignInStatusEvent()` on creation:
+    ```dart
+    BlocProvider(
+      create: (_) => getIt<AuthLoginBloc>()..add(AuthCheckSignInStatusEvent()),
+    ),
+    ```
+  - Listen with `BlocListener<AuthLoginBloc, AuthLoginState>` filtering for `AuthCheckSignInStatusSuccessState` or `AuthCheckSignInStatusFailureState`.
+  - Combine the splash visual duration (timer or gif controller) and auth check with `_navigateIfReady()`.
+  - Navigate to `AppRoute.dashboard.name` if authenticated, or `AppRoute.login.name` if not.
+
+
 

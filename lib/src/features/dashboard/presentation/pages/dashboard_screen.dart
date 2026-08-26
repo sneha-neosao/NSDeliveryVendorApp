@@ -5,6 +5,7 @@ import '../../../../configs/injector/injector_conf.dart';
 import '../../../../core/blocs/theme/theme_bloc.dart';
 import '../../../../core/blocs/translate/translate_bloc.dart';
 import '../../../../core/extensions/integer_sizedbox_extension.dart';
+import '../../../../core/session/session_manager.dart';
 import '../../../../core/theme/app_color.dart';
 import '../widgets/dashboard_header_widget.dart';
 import '../widgets/overview_card_widget.dart';
@@ -17,6 +18,24 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  String _entityName = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserSession();
+  }
+
+  Future<void> _loadUserSession() async {
+    final session = await SessionManager.getUserSession();
+    final name = session?.data?.restaurant?.entityName;
+    if (name != null && name.isNotEmpty && mounted) {
+      setState(() {
+        _entityName = name;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
@@ -67,7 +86,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Vendor Header
-                    const DashboardHeaderWidget(),
+                    DashboardHeaderWidget(
+                      greeting: 'Hello,',
+                      vendorName:
+                          _entityName.isNotEmpty ? _entityName : 'Vendor',
+                    ),
                     20.hS,
                     // Today's Overview Card
                     const OverviewCardWidget(),

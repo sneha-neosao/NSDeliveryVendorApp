@@ -8,6 +8,7 @@ import '../../../../core/blocs/theme/theme_bloc.dart';
 import '../../../../core/blocs/translate/translate_bloc.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../routes/app_route_path.dart';
+import '../../../login/presentation/bloc/auth_login_bloc/auth_login_bloc.dart';
 import '../widgets/splash_image_widget.dart';
 
 /// Splash screen displayed when the application is launched.
@@ -20,6 +21,10 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   Timer? _timer;
+  bool _authCheckDone = false;
+  bool _timerDone = false;
+  bool _hasNavigated = false;
+  AuthLoginState? _authState;
 
   @override
   void initState() {
@@ -29,11 +34,25 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _startTimer() {
-    _timer = Timer(const Duration(milliseconds: 2500), () {
+    _timer = Timer(const Duration(milliseconds: 2000), () {
       if (mounted) {
-        context.goNamed(AppRoute.login.name);
+        setState(() {
+          _timerDone = true;
+        });
+        _navigateIfReady();
       }
     });
+  }
+
+  void _navigateIfReady() {
+    if (_authCheckDone && _timerDone && _authState != null && !_hasNavigated) {
+      _hasNavigated = true;
+      if (_authState is AuthCheckSignInStatusSuccessState) {
+        context.goNamed(AppRoute.dashboard.name);
+      } else {
+        context.goNamed(AppRoute.login.name);
+      }
+    }
   }
 
   void _setSystemUIOverlay() {
@@ -57,12 +76,30 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        BlocProvider(
+          create: (_) =>
+              getIt<AuthLoginBloc>()..add(AuthCheckSignInStatusEvent()),
+        ),
         BlocProvider(create: (_) => getIt<ThemeBloc>()),
         BlocProvider(create: (_) => getIt<TranslateBloc>()),
       ],
-      child: const Scaffold(
-        backgroundColor: AppColor.white,
-        body: SplashImageWidget(),
+      child: BlocListener<AuthLoginBloc, AuthLoginState>(
+        listenWhen: (_, current) =>
+            current is AuthCheckSignInStatusSuccessState ||
+            current is AuthCheckSignInStatusFailureState,
+        listener: (context, state) {
+          if (mounted) {
+            setState(() {
+              _authCheckDone = true;
+              _authState = state;
+            });
+            _navigateIfReady();
+          }
+        },
+        child: const Scaffold(
+          backgroundColor: AppColor.white,
+          body: SplashImageWidget(),
+        ),
       ),
     );
   }

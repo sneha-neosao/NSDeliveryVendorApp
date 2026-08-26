@@ -10,8 +10,8 @@ class DashboardHeaderWidget extends StatelessWidget {
 
   const DashboardHeaderWidget({
     super.key,
-    this.greeting = 'Good Morning,',
-    this.vendorName = 'Aashu Kale',
+    this.greeting = 'Hello,',
+    this.vendorName = 'Vendor',
     this.onSettingsTap,
   });
 
