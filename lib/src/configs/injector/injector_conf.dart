@@ -29,9 +29,16 @@ void configureDepedencies() {
 
   getIt.registerLazySingleton(() => AuthLoginUseCase(getIt<AuthRepositoryImpl>()));
 
+  getIt.registerLazySingleton(() => LogoutUseCase(getIt<AuthRepositoryImpl>()));
+
   getIt.registerFactory(() => AuthLoginFormBloc());
 
-  getIt.registerFactory(() => AuthLoginBloc(getIt<AuthLoginUseCase>()));
+  getIt.registerFactory(
+    () => AuthLoginBloc(
+      getIt<AuthLoginUseCase>(),
+      getIt<LogoutUseCase>(),
+    ),
+  );
 
   /// Other api blocs
 

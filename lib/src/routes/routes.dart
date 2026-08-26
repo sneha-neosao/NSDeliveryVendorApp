@@ -4,3 +4,4 @@ export '../features/main_screen/presentation/pages/main_screen.dart';
 export '../features/dashboard/presentation/pages/dashboard_screen.dart';
 export '../features/orders/presentation/pages/orders_screen.dart';
 export '../features/menu_management/presentation/pages/menu_screen.dart';
+export '../features/settings/presentation/pages/settings_screen.dart';

@@ -2,6 +2,7 @@ export '../../core/blocs/theme/theme_bloc.dart';
 export '../../core/blocs/translate/translate_bloc.dart';
 export '../../features/main_screen/bloc/bottom_nav_bloc.dart';
 export '../../features/login/presentation/domain/login_usecase.dart';
+export '../../features/login/presentation/domain/logout_usecase.dart';
 export '../../features/login/presentation/bloc/auth_login_bloc/auth_login_bloc.dart';
 export '../../features/login/presentation/bloc/auth_login_form/auth_login_form_bloc.dart';
 export '../../routes/app_route_conf.dart';

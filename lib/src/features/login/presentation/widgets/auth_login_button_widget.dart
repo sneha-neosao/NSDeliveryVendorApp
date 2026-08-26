@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../core/theme/app_color.dart';
+import '../../../widgets/app_button_widget.dart';
 
 /// Primary action button for submitting login credentials.
 class AuthLoginButtonWidget extends StatelessWidget {
@@ -17,40 +16,10 @@ class AuthLoginButtonWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 52.h,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColor.primary,
-          disabledBackgroundColor: AppColor.primary.withValues(alpha: 0.6),
-          foregroundColor: AppColor.pureWhite,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-          padding: EdgeInsets.zero,
-        ),
-        child: isLoading
-            ? SizedBox(
-                width: 22.r,
-                height: 22.r,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColor.pureWhite),
-                ),
-              )
-            : Text(
-                text,
-                softWrap: true,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppColor.pureWhite,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-              ),
-      ),
+    return AppButtonWidget(
+      text: text,
+      onPressed: onPressed,
+      isLoading: isLoading,
     );
   }
 }

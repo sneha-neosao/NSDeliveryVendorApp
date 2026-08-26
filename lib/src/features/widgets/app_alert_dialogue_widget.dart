@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/extensions/integer_sizedbox_extension.dart';
+import '../../core/theme/app_color.dart';
 import '../../core/theme/app_font.dart';
 
 class AppAlertDialogWidget extends StatelessWidget {
@@ -13,7 +14,9 @@ class AppAlertDialogWidget extends StatelessWidget {
   final Color iconColor;
   final Color confirmBtnColor;
   final VoidCallback onConfirm;
+  final VoidCallback? onCancel;
   final bool isLoading;
+  final bool showCloseIcon;
 
   const AppAlertDialogWidget({
     super.key,
@@ -26,136 +29,169 @@ class AppAlertDialogWidget extends StatelessWidget {
     required this.iconColor,
     required this.confirmBtnColor,
     required this.onConfirm,
+    this.onCancel,
     this.isLoading = false,
+    this.showCloseIcon = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      child: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // ── Icon ───────────────────────────────────────────────
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: iconBgColor,
-                    shape: BoxShape.circle,
+    return PopScope(
+      canPop: !isLoading,
+      child: Dialog(
+        backgroundColor: AppColor.pureWhite,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
+        insetPadding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
+        child: Stack(
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(24.w, 28.h, 24.w, 24.h),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // ── Top Icon Container ─────────────────────────
+                  Container(
+                    width: 64.r,
+                    height: 64.r,
+                    decoration: BoxDecoration(
+                      color: iconBgColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: iconColor.withValues(alpha: 0.25),
+                        width: 1.5.r,
+                      ),
+                    ),
+                    child: Icon(icon, color: iconColor, size: 30.r),
                   ),
-                  child: Icon(icon, color: iconColor, size: 32),
-                ),
 
-                20.hS,
+                  16.hS,
 
-                // ── Title ──────────────────────────────────────────────
-                Text(
-                  title,
-                  style: AppFont.style(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFF0D121F),
+                  // ── Title ──────────────────────────────────────
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    softWrap: true,
+                    style: AppFont.style(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w800,
+                      color: AppColor.charcoal,
+                    ),
                   ),
-                ),
 
-                12.hS,
+                  8.hS,
 
-                // ── Subtitle ───────────────────────────────────────────
-                Text(
-                  subtitle,
-                  textAlign: TextAlign.center,
-                  style: AppFont.style(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF5C616E),
-                    height: 1.4,
+                  // ── Subtitle ───────────────────────────────────
+                  Text(
+                    subtitle,
+                    textAlign: TextAlign.center,
+                    softWrap: true,
+                    style: AppFont.style(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w500,
+                      color: AppColor.slateGrey,
+                      height: 1.4,
+                    ),
                   ),
-                ),
 
-                32.hS,
+                  24.hS,
 
-                // ── Buttons ────────────────────────────────────────────
-                Row(
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: 48,
-                        child: TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: TextButton.styleFrom(
-                            backgroundColor: const Color(0xFFF6F6F6),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25),
+                  // ── Action Buttons (Equal Height & Width) ──────
+                  Row(
+                    children: [
+                      // Cancel Button
+                      Expanded(
+                        child: SizedBox(
+                          height: 48.h,
+                          child: OutlinedButton(
+                            onPressed: isLoading
+                                ? null
+                                : (onCancel ?? () => Navigator.pop(context)),
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: AppColor.whiteShade,
+                              side: BorderSide(
+                                color: AppColor.border.withValues(alpha: 0.8),
+                                width: 1.r,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25.r),
+                              ),
+                              padding: EdgeInsets.zero,
                             ),
-                          ),
-                          child: Text(
-                            cancelText,
-                            style: AppFont.style(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: const Color(0xFF0D121F),
+                            child: Text(
+                              cancelText,
+                              style: AppFont.style(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w700,
+                                color: AppColor.charcoal,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    12.wS,
-                    Expanded(
-                      child: SizedBox(
-                        height: 48,
-                        child: ElevatedButton(
-                          onPressed: isLoading ? null : onConfirm,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: confirmBtnColor,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25),
+                      12.wS,
+                      // Confirm Button (Matching Height & Width)
+                      Expanded(
+                        child: SizedBox(
+                          height: 48.h,
+                          child: ElevatedButton(
+                            onPressed: isLoading ? null : onConfirm,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: confirmBtnColor,
+                              foregroundColor: AppColor.pureWhite,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25.r),
+                              ),
+                              padding: EdgeInsets.zero,
                             ),
-                          ),
-                          child: isLoading
-                              ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                              : Text(
-                            confirmText,
-                            style: AppFont.style(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                            ),
+                            child: isLoading
+                                ? SizedBox(
+                                    width: 20.r,
+                                    height: 20.r,
+                                    child: const CircularProgressIndicator(
+                                      color: AppColor.pureWhite,
+                                      strokeWidth: 2.2,
+                                    ),
+                                  )
+                                : Text(
+                                    confirmText,
+                                    style: AppFont.style(
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColor.pureWhite,
+                                    ),
+                                  ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
 
-          // ── Close Icon ─────────────────────────────────────────────
-          Positioned(
-            top: 12,
-            right: 12,
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: const Icon(Icons.close, size: 20, color: Color(0xFFB0B8C8)),
-            ),
-          ),
-        ],
+            // ── Optional Close Icon ──────────────────────────────
+            if (showCloseIcon && !isLoading)
+              Positioned(
+                top: 12.h,
+                right: 12.w,
+                child: GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    padding: EdgeInsets.all(4.r),
+                    child: Icon(
+                      Icons.close,
+                      size: 20.r,
+                      color: AppColor.slateGrey,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

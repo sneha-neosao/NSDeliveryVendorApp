@@ -23,6 +23,11 @@ class AppRouteConf {
         name: AppRoute.login.name,
         pageBuilder: (context, state) => _fadePage(const LoginScreen()),
       ),
+      GoRoute(
+        path: AppRoute.settings.path,
+        name: AppRoute.settings.name,
+        pageBuilder: (context, state) => _fadePage(const SettingsScreen()),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainScreen(navigationShell: navigationShell);

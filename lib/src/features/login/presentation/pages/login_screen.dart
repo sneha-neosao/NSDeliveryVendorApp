@@ -8,13 +8,13 @@ import '../../../../core/blocs/translate/translate_bloc.dart';
 import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../routes/app_route_path.dart';
+import '../../../widgets/app_button_widget.dart';
 import '../../../widgets/snackbar_widget.dart';
 import '../bloc/auth_login_bloc/auth_login_bloc.dart';
 import '../bloc/auth_login_form/auth_login_form_bloc.dart';
 import '../widgets/auth_background_widget.dart';
 import '../widgets/auth_forgot_password_widget.dart';
 import '../widgets/auth_header_widget.dart';
-import '../widgets/auth_login_button_widget.dart';
 import '../widgets/auth_logo_widget.dart';
 import '../widgets/auth_register_footer_widget.dart';
 import '../widgets/login_input_widget.dart';
@@ -122,7 +122,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     builder: (context, state) {
                       final isLoading = state is AuthLoginLoadingState;
 
-                      return AuthLoginButtonWidget(
+                      return AppButtonWidget(
+                        text: 'Login',
                         isLoading: isLoading,
                         onPressed: () => _login(context),
                       );

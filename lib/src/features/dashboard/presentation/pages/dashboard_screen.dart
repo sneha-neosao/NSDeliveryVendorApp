@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../configs/injector/injector_conf.dart';
 import '../../../../core/blocs/theme/theme_bloc.dart';
 import '../../../../core/blocs/translate/translate_bloc.dart';
 import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/session/session_manager.dart';
 import '../../../../core/theme/app_color.dart';
+import '../../../../routes/app_route_path.dart';
 import '../widgets/dashboard_header_widget.dart';
 import '../widgets/overview_card_widget.dart';
 
@@ -90,6 +92,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       greeting: 'Hello,',
                       vendorName:
                           _entityName.isNotEmpty ? _entityName : 'Vendor',
+                      onSettingsTap: () {
+                        context.pushNamed(AppRoute.settings.name);
+                      },
                     ),
                     20.hS,
                     // Today's Overview Card
