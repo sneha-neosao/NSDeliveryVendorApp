@@ -4,6 +4,7 @@ import '../../../../configs/injector/injector_conf.dart';
 import '../../../../core/blocs/theme/theme_bloc.dart';
 import '../../../../core/blocs/translate/translate_bloc.dart';
 import '../../../../core/theme/app_color.dart';
+import '../widgets/menu_header_widget.dart';
 
 class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key});
@@ -22,14 +23,25 @@ class _MenuScreenState extends State<MenuScreen> {
       ],
       child: Scaffold(
         backgroundColor: AppColor.white,
-        body: Center(
-          child: Text(
-            'Hello',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  color: AppColor.textPrimary,
-                  fontWeight: FontWeight.w600,
+        body: Column(
+          children: [
+            // Top Compact Orange Curved Title Bar
+            const MenuHeaderWidget(
+              title: 'Menu',
+            ),
+            // Menu Body Content
+            Expanded(
+              child: Center(
+                child: Text(
+                  'Hello',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        color: AppColor.textPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
-          ),
+              ),
+            ),
+          ],
         ),
       ),
     );
