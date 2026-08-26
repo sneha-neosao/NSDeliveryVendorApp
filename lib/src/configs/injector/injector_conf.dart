@@ -40,6 +40,11 @@ void configureDepedencies() {
     ),
   );
 
+  /// Menu Management
+  getIt.registerLazySingleton(() => ItemsListUseCase(getIt<AuthRepositoryImpl>()));
+
+  getIt.registerFactory(() => ItemsListBloc(getIt<ItemsListUseCase>()));
+
   /// Other api blocs
 
 

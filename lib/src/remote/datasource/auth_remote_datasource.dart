@@ -1,12 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:nsdelivery_vendor_app/src/core/api/api_exception.dart';
 import 'package:nsdelivery_vendor_app/src/core/errors/exceptions.dart';
-import 'package:nsdelivery_vendor_app/src/features/login/presentation/domain/login_usecase.dart';
-import 'package:nsdelivery_vendor_app/src/remote/models/auth_model/login_response.dart';
-import 'package:nsdelivery_vendor_app/src/remote/models/common_response.dart';
 import '../../configs/injector/injector.dart';
 import '../../core/constants/error_message.dart';
-import '../../core/utils/logger.dart';
 
 sealed class RemoteDataSource {
 
@@ -14,6 +10,9 @@ sealed class RemoteDataSource {
   Future<LoginResponse> login(LoginParams params);
 
   Future<CommonResponse> logout(String token, String refreshToken);
+
+  /// Items
+  Future<ItemsListResponse> itemsList(String token,ItemsListParams params);
 }
 
 class RemoteDataSourceImpl implements RemoteDataSource {
@@ -76,6 +75,50 @@ class RemoteDataSourceImpl implements RemoteDataSource {
       }
       if (e is ApiException) {
         throw e; // rethrow as-is
+      }
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<ItemsListResponse> itemsList(String token, ItemsListParams params) async {
+    try {
+      final queryParams = <String, String>{
+        'page': '${params.page}',
+        'limit': '${params.limit}',
+      };
+      if (params.q != null && params.q!.trim().isNotEmpty) {
+        queryParams['q'] = params.q!.trim();
+      }
+      if (params.status != null && params.status!.trim().isNotEmpty) {
+        queryParams['status'] = params.status!.trim();
+      }
+
+      final queryString = queryParams.entries
+          .map((e) => "${e.key}=${Uri.encodeComponent(e.value)}")
+          .join('&');
+
+      final response = await _helper.execute(
+        method: Method.get,
+        url: "${ApiUrl.itemsList}?$queryString",
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      final respData = ItemsListResponse.fromJson(response);
+      return respData;
+    } on EmptyException {
+      throw AuthException();
+    } catch (e) {
+      logger.e(e);
+      if (e.toString() == noElement) {
+        throw AuthException();
+      }
+      if (e is ApiException) {
+        rethrow;
       }
       throw ServerException();
     }
