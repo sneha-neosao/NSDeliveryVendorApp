@@ -1,0 +1,17 @@
+{
+  "title": "NS Delivery Vendor",
+  "login_title": "Welcome Back!",
+  "login_subtitle": "Login to continue",
+  "email": "Email",
+  "enter_your_email": "Enter Your Email",
+  "please_enter_email": "Please enter email",
+  "please_enter_valid_email": "Please enter a valid email",
+  "login_password_label": "Password",
+  "login_password_hint": "Enter your password",
+  "please_enter_password": "Please enter password",
+  "please_enter_valid_password": "Password must be at least 6 characters",
+  "login_button": "Login",
+  "login_forgot_password": "Forgot Password?",
+  "dont_have_an_account": "Don't have an account?",
+  "register": "Register"
+}

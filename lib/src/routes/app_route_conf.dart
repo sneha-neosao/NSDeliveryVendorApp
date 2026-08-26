@@ -1,0 +1,82 @@
+import 'package:flutter/widgets.dart';
+import 'package:go_router/go_router.dart';
+import 'app_route_path.dart';
+import 'routes.dart';
+
+final GlobalKey<NavigatorState> globalNavigator = GlobalKey<NavigatorState>();
+
+class AppRouteConf {
+  GoRouter get router => _router;
+
+  late final _router = GoRouter(
+    navigatorKey: globalNavigator,
+    initialLocation: AppRoute.splash.path,
+    debugLogDiagnostics: true,
+    routes: [
+      GoRoute(
+        path: AppRoute.splash.path,
+        name: AppRoute.splash.name,
+        pageBuilder: (context, state) => _fadePage(const SplashScreen()),
+      ),
+      GoRoute(
+        path: AppRoute.login.path,
+        name: AppRoute.login.name,
+        pageBuilder: (context, state) => _fadePage(const LoginScreen()),
+      ),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return MainScreen(navigationShell: navigationShell);
+        },
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoute.dashboard.path,
+                name: AppRoute.dashboard.name,
+                pageBuilder: (context, state) =>
+                    _fadePage(const DashboardScreen()),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoute.orders.path,
+                name: AppRoute.orders.name,
+                pageBuilder: (context, state) =>
+                    _fadePage(const OrdersScreen()),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoute.menu.path,
+                name: AppRoute.menu.name,
+                pageBuilder: (context, state) =>
+                    _fadePage(const MenuScreen()),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+/// Fade transition page helper
+
+CustomTransitionPage _fadePage(Widget child) => CustomTransitionPage(
+  transitionDuration: const Duration(
+    milliseconds: 500,
+  ), // Duration of the animation
+  child: child,
+  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+    final curvedAnimation = CurvedAnimation(
+      parent: animation,
+      curve: Curves.easeInOut, // Smooth in-out fade
+    );
+
+    return FadeTransition(opacity: curvedAnimation, child: child);
+  },
+);
