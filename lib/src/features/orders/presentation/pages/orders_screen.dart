@@ -96,9 +96,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
         body: Column(
           children: [
             // Top Compact Orange Curved Header
-            OrdersHeaderWidget(
+            const OrdersHeaderWidget(
               title: 'Orders',
-              ongoingCount: _ongoingOrders.length,
             ),
             14.hS,
             // Innovative Modern Tab Switcher

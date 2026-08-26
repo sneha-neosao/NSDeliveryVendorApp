@@ -80,26 +80,26 @@ class OrdersTabSelectorWidget extends StatelessWidget {
               Positioned.fill(
                 child: Row(
                   children: [
-                    // Ongoing Orders Tab
+                    // Ongoing Orders Tab (Always shows count badge whether selected or not)
                     Expanded(
                       child: _buildTabItem(
                         context: context,
                         index: 0,
                         title: 'Ongoing Orders',
-                        icon: Icons.bolt_rounded,
+                        icon: Icons.access_time_rounded,
                         count: ongoingCount,
-                        showLiveDot: true,
+                        showCount: true,
                       ),
                     ),
-                    // Order History Tab
+                    // Order History Tab (No count badge)
                     Expanded(
                       child: _buildTabItem(
                         context: context,
                         index: 1,
                         title: 'Order History',
-                        icon: Icons.history_rounded,
+                        icon: Icons.check_circle_outline_rounded,
                         count: historyCount,
-                        showLiveDot: false,
+                        showCount: false,
                       ),
                     ),
                   ],
@@ -118,7 +118,7 @@ class OrdersTabSelectorWidget extends StatelessWidget {
     required String title,
     required IconData icon,
     required int count,
-    required bool showLiveDot,
+    required bool showCount,
   }) {
     final isSelected = selectedIndex == index;
 
@@ -153,34 +153,29 @@ class OrdersTabSelectorWidget extends StatelessWidget {
                   softWrap: true,
                 ),
               ),
-              // Live Dot or Badge Count
-              if (showLiveDot && isSelected) ...[
+              // Count badge shown only on Ongoing Orders tab (either selected or not)
+              if (showCount && count > 0) ...[
                 6.wS,
-                Container(
-                  width: 6.r,
-                  height: 6.r,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColor.pureWhite,
-                  ),
-                ),
-              ] else if (count > 0 && !isSelected) ...[
-                6.wS,
-                Container(
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
                   padding: EdgeInsets.symmetric(
                     horizontal: 6.w,
                     vertical: 2.h,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColor.orangeTint,
+                    color: isSelected
+                        ? AppColor.pureWhite
+                        : AppColor.orangeTint,
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Text(
                     '$count',
                     style: TextStyle(
-                      color: AppColor.primaryDark,
+                      color: isSelected
+                          ? AppColor.primary
+                          : AppColor.primaryDark,
                       fontSize: 10.sp,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                 ),
