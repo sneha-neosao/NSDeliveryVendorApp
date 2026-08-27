@@ -21,7 +21,7 @@ class MenuShimmerWidget extends StatelessWidget {
           left: 18.w,
           right: 18.w,
           top: 6.h,
-          bottom: 100.h,
+          bottom: 16.h,
         );
 
     return ListView.separated(

@@ -116,7 +116,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   top: topPadding + 10.h,
                   left: 20.w,
                   right: 20.w,
-                  bottom: MediaQuery.of(context).padding.bottom + 24.h,
+                  bottom: 16.h,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

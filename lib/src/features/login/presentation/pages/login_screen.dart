@@ -69,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
               physics: const ClampingScrollPhysics(),
               padding: EdgeInsets.only(
                 top: topPadding + 36.h,
-                bottom: bottomPadding + 24.h,
+                bottom: 16.h,
                 left: 24.w,
                 right: 24.w,
               ),

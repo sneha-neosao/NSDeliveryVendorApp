@@ -67,7 +67,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   left: 20.w,
                   right: 20.w,
                   top: 20.h,
-                  bottom: bottomPadding > 0 ? bottomPadding + 24.h : 30.h,
+                  bottom: 16.h,
                 ),
                 child: Form(
                   key: _formKey,

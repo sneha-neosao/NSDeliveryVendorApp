@@ -75,7 +75,7 @@ class _MenuItemsListViewWidgetState extends State<MenuItemsListViewWidget> {
           left: 18.w,
           right: 18.w,
           top: 6.h,
-          bottom: 100.h, // Bottom clearance for bottom nav bar
+          bottom: 16.h,
         ),
         itemCount: totalCount,
         separatorBuilder: (context, index) => 12.hS,

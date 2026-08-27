@@ -212,7 +212,7 @@ class _HistoryListView extends StatelessWidget {
         left: 18.w,
         right: 18.w,
         top: 4.h,
-        bottom: 100.h,
+        bottom: 16.h,
       ),
       itemCount: totalCount,
       separatorBuilder: (_, _) => 12.hS,

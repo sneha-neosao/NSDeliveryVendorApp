@@ -111,7 +111,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         top: 16.h,
                         left: 18.w,
                         right: 18.w,
-                        bottom: 100.h,
+                        bottom: 16.h,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

@@ -128,7 +128,7 @@ class _SlotScreenState extends State<SlotScreen> {
                                 left: 18.w,
                                 right: 18.w,
                                 top: 14.h,
-                                bottom: 80.h,
+                                bottom: 16.h,
                               ),
                               itemCount: items.length +
                                   (state.isLoadingMore ? 1 : 0),
