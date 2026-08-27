@@ -115,6 +115,11 @@ void configureDepedencies() {
 
   getIt.registerFactory(() => DeleteAccountBloc(getIt<DeleteAccountUseCase>()));
 
+  /// App Version
+  getIt.registerLazySingleton(() => AppVersionUseCase(getIt<AuthRepositoryImpl>()));
+
+  getIt.registerFactory(() => AppVersionBloc(getIt<AppVersionUseCase>()));
+
   /// Other api blocs
 
 

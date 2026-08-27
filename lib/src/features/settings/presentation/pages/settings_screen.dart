@@ -11,6 +11,7 @@ import '../../../../core/theme/app_color.dart';
 import '../../../../routes/app_route_path.dart';
 import '../../../dashboard/bloc/serviceability_bloc/serviceability_bloc.dart';
 import '../../../login/bloc/auth_login_bloc/auth_login_bloc.dart';
+import '../../bloc/delete_account_bloc/delete_account_bloc.dart';
 import '../../../widgets/snackbar_widget.dart';
 import '../widgets/delete_account_confirmation_dialog.dart';
 import '../widgets/logout_confirmation_dialog.dart';

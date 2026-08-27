@@ -32,7 +32,7 @@ class DeleteAccountBloc extends Bloc<DeleteAccountEvent, DeleteAccountState> {
       },
       (r) async {
         // Clear session on successful account deletion
-        await SessionManager.clearSession();
+        await SessionManager.clear();
         emit(DeleteAccountSuccessState(r));
       },
     );

@@ -17,6 +17,8 @@ sealed class RemoteDataSource {
 
   Future<DeleteAccountResponse> DeleteAccount(String token);
 
+  Future<AppVersionResponse> AppVersion();
+
   /// Items
   Future<ItemsListResponse> itemsList(String token, ItemsListParams params);
 
@@ -643,6 +645,30 @@ class RemoteDataSourceImpl implements RemoteDataSource {
       );
 
       final respData = DeleteAccountResponse.fromJson(response);
+      return respData;
+    } on EmptyException {
+      throw AuthException();
+    } catch (e) {
+      logger.e(e);
+      if (e.toString() == noElement) {
+        throw AuthException();
+      }
+      if (e is ApiException) {
+        rethrow;
+      }
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<AppVersionResponse> AppVersion() async {
+    try {
+      final response = await _helper.execute(
+        method: Method.get,
+        url: ApiUrl.appVersion,
+      );
+
+      final respData = AppVersionResponse.fromJson(response);
       return respData;
     } on EmptyException {
       throw AuthException();
