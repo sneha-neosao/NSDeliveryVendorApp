@@ -92,7 +92,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       greeting: 'Hello,',
                       vendorName:
                           _entityName.isNotEmpty ? _entityName : 'Vendor',
-                      onSettingsTap: () {
+                      onProfileTap: () {
                         context.pushNamed(AppRoute.settings.name);
                       },
                     ),

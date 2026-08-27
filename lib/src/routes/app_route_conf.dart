@@ -43,6 +43,13 @@ class AppRouteConf {
           return _fadePage(const SlotScreen());
         },
       ),
+      GoRoute(
+        path: AppRoute.changePassword.path,
+        name: AppRoute.changePassword.name,
+        pageBuilder: (context, state) {
+          return _fadePage(const ChangePasswordScreen());
+        },
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainScreen(navigationShell: navigationShell);

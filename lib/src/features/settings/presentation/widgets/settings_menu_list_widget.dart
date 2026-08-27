@@ -9,6 +9,7 @@ class SettingsMenuListWidget extends StatelessWidget {
   final bool isServiceOn;
   final bool isServiceabilityLoading;
   final ValueChanged<bool>? onServiceabilityChanged;
+  final VoidCallback? onChangePasswordTap;
   final VoidCallback? onTimeSlotsTap;
   final VoidCallback? onLogoutTap;
   final VoidCallback? onDeleteAccountTap;
@@ -18,6 +19,7 @@ class SettingsMenuListWidget extends StatelessWidget {
     this.isServiceOn = true,
     this.isServiceabilityLoading = false,
     this.onServiceabilityChanged,
+    this.onChangePasswordTap,
     this.onTimeSlotsTap,
     this.onLogoutTap,
     this.onDeleteAccountTap,
@@ -61,16 +63,27 @@ class SettingsMenuListWidget extends StatelessWidget {
         ),
         14.hS,
 
-        // 2. Time Slots with Clock Icon
+        // 2. Change Password with Lock Icon & Arrow
+        SettingsMenuItemWidget(
+          icon: Icons.lock_outline_rounded,
+          title: 'Change Password',
+          subtitle: 'Update your account password',
+          showTrailing: true,
+          onTap: onChangePasswordTap,
+        ),
+        14.hS,
+
+        // 3. Time Slots with Clock Icon & Arrow
         SettingsMenuItemWidget(
           icon: Icons.access_time_rounded,
           title: 'Time Slots',
           subtitle: 'Add and manage your time slots',
+          showTrailing: true,
           onTap: onTimeSlotsTap,
         ),
         14.hS,
 
-        // 3. Logout (No Arrow)
+        // 4. Logout (No Arrow)
         SettingsMenuItemWidget(
           icon: Icons.logout_rounded,
           title: 'Logout',
@@ -80,7 +93,7 @@ class SettingsMenuListWidget extends StatelessWidget {
         ),
         14.hS,
 
-        // 4. Delete Account (No Arrow)
+        // 5. Delete Account (No Arrow)
         SettingsMenuItemWidget(
           icon: Icons.delete_outline_rounded,
           title: 'Delete Account',

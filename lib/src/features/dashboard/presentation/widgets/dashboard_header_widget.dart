@@ -6,17 +6,21 @@ import '../../../../core/theme/app_color.dart';
 class DashboardHeaderWidget extends StatelessWidget {
   final String greeting;
   final String vendorName;
+  final VoidCallback? onProfileTap;
   final VoidCallback? onSettingsTap;
 
   const DashboardHeaderWidget({
     super.key,
     this.greeting = 'Hello,',
     this.vendorName = 'Vendor',
+    this.onProfileTap,
     this.onSettingsTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final handleTap = onProfileTap ?? onSettingsTap;
+
     return Row(
       children: [
         // Vendor Avatar with border
@@ -72,9 +76,9 @@ class DashboardHeaderWidget extends StatelessWidget {
           ),
         ),
         12.wS,
-        // Settings Icon Button
+        // Profile Icon Button
         GestureDetector(
-          onTap: onSettingsTap,
+          onTap: handleTap,
           behavior: HitTestBehavior.opaque,
           child: Container(
             width: 40.r,
@@ -84,9 +88,9 @@ class DashboardHeaderWidget extends StatelessWidget {
               color: AppColor.pureWhite.withValues(alpha: 0.15),
             ),
             child: Icon(
-              Icons.settings_rounded,
+              Icons.person_rounded,
               color: AppColor.pureWhite,
-              size: 22.r,
+              size: 24.r,
             ),
           ),
         ),

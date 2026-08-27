@@ -6,7 +6,8 @@ enum AppRoute {
   menu(path: "/menu"),
   settings(path: "/settings"),
   orderDetails(path: "/order_details"),
-  slots(path: "/slots");
+  slots(path: "/slots"),
+  changePassword(path: "/change_password");
 
   final String path;
 

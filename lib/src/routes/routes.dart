@@ -7,3 +7,4 @@ export '../features/menu_management/presentation/pages/menu_screen.dart';
 export '../features/settings/presentation/pages/settings_screen.dart';
 export '../features/orders/presentation/pages/order_details_screen.dart';
 export '../features/settings/presentation/pages/slot_screen.dart';
+export '../features/settings/presentation/pages/change_password_screen.dart';

@@ -170,6 +170,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   ),
                                 );
                           },
+                          onChangePasswordTap: () =>
+                              context.push(AppRoute.changePassword.path),
                           onTimeSlotsTap: () =>
                               context.push(AppRoute.slots.path),
                           onLogoutTap: () =>
