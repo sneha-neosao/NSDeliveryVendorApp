@@ -9,9 +9,12 @@ import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/session/session_manager.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../routes/app_route_path.dart';
+import '../../bloc/performance_metrics_bloc/performance_metrics_bloc.dart';
 import '../../bloc/summary_stats_bloc/summary_stats_bloc.dart';
 import '../widgets/dashboard_header_widget.dart';
+import '../widgets/order_performance_widget.dart';
 import '../widgets/overview_card_widget.dart';
+import '../widgets/top_products_widget.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -60,8 +63,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
-
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => getIt<ThemeBloc>()),
@@ -70,51 +71,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
           create: (_) =>
               getIt<SummaryStatsBloc>()..add(FetchSummaryStatsEvent()),
         ),
+        BlocProvider(
+          create: (_) =>
+              getIt<PerformanceMetricsBloc>()..add(FetchPerformanceMetricsEvent()),
+        ),
       ],
       child: Builder(
         builder: (blocContext) {
           return Scaffold(
             backgroundColor: AppColor.white,
-            body: Stack(
+            body: Column(
               children: [
-                // ── Top Orange Curved Background ─────────────────────
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: topPadding + 195.h,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          AppColor.primary,
-                          AppColor.darkOrange,
-                        ],
-                      ),
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(28.r),
-                        bottomRight: Radius.circular(28.r),
-                      ),
-                    ),
-                  ),
+                // ── Fixed Top Header (Keeps Name & Profile Icon Fixed) ──
+                DashboardHeaderWidget(
+                  greeting: 'Hello,',
+                  vendorName:
+                      _entityName.isNotEmpty ? _entityName : 'Vendor',
+                  onProfileTap: () {
+                    context.pushNamed(AppRoute.settings.name);
+                  },
                 ),
 
-                // ── Scrollable Content with Safe Scrolling ───────────
-                Positioned.fill(
+                // ── Scrollable Body Below Fixed Orange Header ──────────
+                Expanded(
                   child: RefreshIndicator(
                     color: AppColor.primary,
                     onRefresh: () async {
                       blocContext
                           .read<SummaryStatsBloc>()
                           .add(FetchSummaryStatsEvent());
+                      blocContext
+                          .read<PerformanceMetricsBloc>()
+                          .add(FetchPerformanceMetricsEvent());
                       await _loadUserSession();
                     },
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: EdgeInsets.only(
-                        top: topPadding + 16.h,
+                        top: 16.h,
                         left: 18.w,
                         right: 18.w,
                         bottom: 100.h,
@@ -122,19 +116,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Vendor Header
-                          DashboardHeaderWidget(
-                            greeting: 'Hello,',
-                            vendorName: _entityName.isNotEmpty
-                                ? _entityName
-                                : 'Vendor',
-                            onProfileTap: () {
-                              context.pushNamed(AppRoute.settings.name);
-                            },
-                          ),
-                          20.hS,
-
-                          // Today's Overview Card connected to SummaryStatsBloc
+                          // 1. Store Overview Card (Summary Stats)
                           BlocBuilder<SummaryStatsBloc, SummaryStatsState>(
                             builder: (context, state) {
                               final isLoading =
@@ -166,6 +148,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 onMenuItemsTap: () {
                                   context.go(AppRoute.menu.path);
                                 },
+                              );
+                            },
+                          ),
+                          18.hS,
+
+                          // 2. Order Performance & Top Products
+                          BlocBuilder<PerformanceMetricsBloc,
+                              PerformanceMetricsState>(
+                            builder: (context, state) {
+                              final isLoading =
+                                  state is PerformanceMetricsLoadingState;
+                              final data =
+                                  state is PerformanceMetricsSuccessState
+                                      ? state.data.data
+                                      : null;
+
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Order Performance Card
+                                  OrderPerformanceWidget(
+                                    performance: data?.orderPerformance,
+                                    isLoading: isLoading,
+                                  ),
+                                  18.hS,
+
+                                  // Top Selling Dishes Card
+                                  TopProductsWidget(
+                                    topProducts: data?.topProducts ?? [],
+                                    isLoading: isLoading,
+                                  ),
+                                ],
                               );
                             },
                           ),

@@ -71,6 +71,10 @@ void configureDepedencies() {
 
   getIt.registerFactory(() => SummaryStatsBloc(getIt<SummaryStatsUseCase>()));
 
+  getIt.registerLazySingleton(() => PerformanceMetricsUseCase(getIt<AuthRepositoryImpl>()));
+
+  getIt.registerFactory(() => PerformanceMetricsBloc(getIt<PerformanceMetricsUseCase>()));
+
   /// Settings / Time Slots
   getIt.registerLazySingleton(() => SlotsListUseCase(getIt<AuthRepositoryImpl>()));
 

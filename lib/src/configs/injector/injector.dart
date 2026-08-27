@@ -20,6 +20,9 @@ export '../../features/dashboard/bloc/serviceability_bloc/serviceability_bloc.da
 export '../../features/dashboard/domain/summary_stats_usecase.dart';
 export '../../features/dashboard/bloc/summary_stats_bloc/summary_stats_bloc.dart';
 export '../../remote/models/dashboard_model/summary_stats_response.dart';
+export '../../features/dashboard/domain/performance_metrics_usecase.dart';
+export '../../features/dashboard/bloc/performance_metrics_bloc/performance_metrics_bloc.dart';
+export '../../remote/models/dashboard_model/performance_metrics_response.dart';
 export '../../features/settings/domain/slots_list_usecase.dart';
 export '../../features/settings/bloc/slots_list_bloc/slots_list_bloc.dart';
 export '../../features/settings/domain/slot_create_usecase.dart';
