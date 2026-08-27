@@ -40,6 +40,7 @@ class _SlotScreenState extends State<SlotScreen> {
           create: (_) => getIt<SlotsListBloc>()
             ..add(const GetSlotsListEvent(page: 1, limit: 10)),
         ),
+        BlocProvider(create: (_) => getIt<SlotCreateBloc>()),
       ],
       child: Builder(
         builder: (blocContext) {
@@ -221,8 +222,10 @@ class _SlotScreenState extends State<SlotScreen> {
           onTap: () {
             AddSlotBottomSheetWidget.show(
               context,
-              onCreateSlot: (day, startTime, endTime) {
-                // Hook to dispatch slot creation when API is available
+              onSlotCreated: () {
+                context
+                    .read<SlotsListBloc>()
+                    .add(const GetSlotsListEvent(page: 1, limit: 10));
               },
             );
           },

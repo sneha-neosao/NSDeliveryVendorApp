@@ -24,6 +24,8 @@ sealed class RemoteDataSource {
   Future<ServiceabilityResponse> ServiceabilityUpdate(String token, ServiceabilityUpdateParams params);
 
   Future<SlotsListResponse> SlotsList(String token, SlotsListParams params);
+
+  Future<SlotCreateResponse> SlotCreate(String token, SlotCreateParams params);
 }
 
 class RemoteDataSourceImpl implements RemoteDataSource {
@@ -280,6 +282,38 @@ class RemoteDataSourceImpl implements RemoteDataSource {
       );
 
       final respData = SlotsListResponse.fromJson(response);
+      return respData;
+    } on EmptyException {
+      throw AuthException();
+    } catch (e) {
+      logger.e(e);
+      if (e.toString() == noElement) {
+        throw AuthException();
+      }
+      if (e is ApiException) {
+        rethrow;
+      }
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<SlotCreateResponse> SlotCreate(
+      String token, SlotCreateParams params) async {
+    try {
+      final response = await _helper.execute(
+        method: Method.post,
+        url: ApiUrl.slotCreate,
+        data: params.toFormData(),
+        options: Options(
+          contentType: Headers.formUrlEncodedContentType,
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      final respData = SlotCreateResponse.fromJson(response);
       return respData;
     } on EmptyException {
       throw AuthException();
