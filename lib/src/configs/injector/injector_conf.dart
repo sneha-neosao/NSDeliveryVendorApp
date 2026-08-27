@@ -84,6 +84,11 @@ void configureDepedencies() {
 
   getIt.registerFactory(() => SlotDeleteBloc(getIt<SlotDeleteUseCase>()));
 
+  /// Profile
+  getIt.registerLazySingleton(() => ProfileUseCase(getIt<AuthRepositoryImpl>()));
+
+  getIt.registerFactory(() => ProfileBloc(getIt<ProfileUseCase>()));
+
   /// Other api blocs
 
 

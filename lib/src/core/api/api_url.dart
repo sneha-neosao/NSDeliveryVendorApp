@@ -30,5 +30,7 @@ class ApiUrl {
   static const slotUpdate = "/slots/update";
 
   static const slotDelete = "/slots/delete";
+
+  static const profileList = "/profile/list";
 }
 

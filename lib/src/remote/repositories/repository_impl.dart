@@ -40,6 +40,8 @@ abstract class Repository {
 
   Future<Either<Failure, SlotDeleteResponse>> slot_delete(SlotDeleteParams params);
 
+  /// Profile
+  Future<Either<Failure, ProfileResponse>> profile_list(NoParams params);
 }
 
 class AuthRepositoryImpl implements Repository {
@@ -476,4 +478,38 @@ class AuthRepositoryImpl implements Repository {
     );
   }
 
+  @override
+  Future<Either<Failure, ProfileResponse>> profile_list(NoParams params) {
+    return _networkInfo.check<ProfileResponse>(
+      connected: () async {
+        try {
+          String token = await SessionManager.getAuthToken() ?? "";
+
+          final respData = await _remoteDataSource.ProfileList(token);
+
+          if (respData.status != 200) {
+            return Left(
+                CredentialFailure(respData.message ?? "Something went wrong"));
+          }
+
+          return Right(respData);
+        } on ServerException {
+          return Left(ServerFailure(mapFailureToMessage(ServerFailure(""))));
+        } catch (e) {
+          if (e is ApiException) {
+            return Left(ApiFailure(e.message));
+          }
+          return Left(ServerFailure(mapFailureToMessage(ServerFailure(""))));
+        }
+      },
+      notConnected: () async {
+        try {
+          return Left(
+              InternetFailure(mapFailureToMessage(InternetFailure(""))));
+        } on CacheException {
+          return Left(CacheFailure(mapFailureToMessage(CacheFailure(""))));
+        }
+      },
+    );
+  }
 }
