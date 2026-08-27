@@ -26,7 +26,7 @@ class CustomBottomNavBar extends StatelessWidget {
           bottom: 14.h,
           top: 6.h,
         ),
-        padding: EdgeInsets.symmetric(horizontal: 8.w),
+        padding: EdgeInsets.symmetric(horizontal: 6.w),
         decoration: BoxDecoration(
           color: AppColor.pureWhite,
           borderRadius: BorderRadius.circular(36.r),
@@ -42,8 +42,8 @@ class CustomBottomNavBar extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final totalWidth = constraints.maxWidth;
-            final itemWidth = totalWidth / 3;
-            final capsuleWidth = itemWidth - 10.w;
+            final itemWidth = totalWidth / 4;
+            final capsuleWidth = itemWidth - 6.w;
             final capsuleHeight = 50.h;
             final leftOffset =
                 selectedIndex * itemWidth + (itemWidth - capsuleWidth) / 2;
@@ -66,10 +66,11 @@ class CustomBottomNavBar extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Tab Items
+                // Tab Items (Dashboard, Orders, Offers, Menu)
                 Positioned.fill(
                   child: Row(
                     children: [
+                      // 0: Dashboard
                       Expanded(
                         child: BottomNavItemWidget(
                           activeIcon: Icons.grid_view_rounded,
@@ -79,6 +80,7 @@ class CustomBottomNavBar extends StatelessWidget {
                           onTap: () => onTabSelected(0),
                         ),
                       ),
+                      // 1: Orders
                       Expanded(
                         child: BottomNavItemWidget(
                           activeIcon: Icons.shopping_bag_rounded,
@@ -88,13 +90,24 @@ class CustomBottomNavBar extends StatelessWidget {
                           onTap: () => onTabSelected(1),
                         ),
                       ),
+                      // 2: Offers (between Orders and Menu)
+                      Expanded(
+                        child: BottomNavItemWidget(
+                          activeIcon: Icons.local_offer_rounded,
+                          inactiveIcon: Icons.local_offer_outlined,
+                          label: 'Offers',
+                          isSelected: selectedIndex == 2,
+                          onTap: () => onTabSelected(2),
+                        ),
+                      ),
+                      // 3: Menu
                       Expanded(
                         child: BottomNavItemWidget(
                           activeIcon: Icons.restaurant_menu_rounded,
                           inactiveIcon: Icons.restaurant_menu_outlined,
                           label: 'Menu',
-                          isSelected: selectedIndex == 2,
-                          onTap: () => onTabSelected(2),
+                          isSelected: selectedIndex == 3,
+                          onTap: () => onTabSelected(3),
                         ),
                       ),
                     ],

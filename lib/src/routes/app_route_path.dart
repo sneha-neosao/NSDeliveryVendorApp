@@ -3,6 +3,7 @@ enum AppRoute {
   login(path: "/login"),
   dashboard(path: "/dashboard"),
   orders(path: "/orders"),
+  offers(path: "/offers"),
   menu(path: "/menu"),
   settings(path: "/settings"),
   orderDetails(path: "/order_details"),

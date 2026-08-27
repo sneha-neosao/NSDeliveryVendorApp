@@ -85,6 +85,16 @@ class AppRouteConf {
           StatefulShellBranch(
             routes: [
               GoRoute(
+                path: AppRoute.offers.path,
+                name: AppRoute.offers.name,
+                pageBuilder: (context, state) =>
+                    _fadePage(const OffersScreen()),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
                 path: AppRoute.menu.path,
                 name: AppRoute.menu.name,
                 pageBuilder: (context, state) =>
