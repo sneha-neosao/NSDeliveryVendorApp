@@ -7,7 +7,9 @@ import '../../../../core/blocs/translate/translate_bloc.dart';
 import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/session/session_manager.dart';
 import '../../../../core/theme/app_color.dart';
+import '../../../dashboard/bloc/serviceability_bloc/serviceability_bloc.dart';
 import '../../../login/bloc/auth_login_bloc/auth_login_bloc.dart';
+import '../../../widgets/snackbar_widget.dart';
 import '../widgets/logout_confirmation_dialog.dart';
 import '../widgets/profile_info_card_widget.dart';
 import '../widgets/settings_header_widget.dart';
@@ -24,6 +26,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _storeName = 'Aashu Snacks Corner';
   String _email = 'aashukale15@gmail.com';
   final String _phone = '+91 98765 43210';
+  bool _isServiceOn = true;
 
   @override
   void initState() {
@@ -56,6 +59,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => getIt<AuthLoginBloc>()),
+        BlocProvider(create: (_) => getIt<ServiceabilityBloc>()),
         BlocProvider(create: (_) => getIt<ThemeBloc>()),
         BlocProvider(create: (_) => getIt<TranslateBloc>()),
       ],
@@ -126,11 +130,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onEditTap: () {},
                     ),
                     18.hS,
-                    // Settings Menu List Options
-                    Builder(
-                      builder: (blocContext) {
+                    // Settings Menu List Options with Serviceability BLoC
+                    BlocConsumer<ServiceabilityBloc, ServiceabilityState>(
+                      listener: (context, state) {
+                        if (state is ServiceabilityUpdateSuccessState) {
+                          if (state.data.data?.adminIsServiceable != null) {
+                            setState(() {
+                              _isServiceOn =
+                                  state.data.data!.adminIsServiceable!;
+                            });
+                          }
+                          appSnackBar(
+                            context,
+                            AppColor.green,
+                            state.data.message ??
+                                'Serviceability updated successfully',
+                          );
+                        } else if (state is ServiceabilityUpdateFailureState) {
+                          appSnackBar(
+                            context,
+                            AppColor.bright_red,
+                            state.message,
+                          );
+                        }
+                      },
+                      builder: (blocContext, state) {
+                        final isLoading =
+                            state is ServiceabilityUpdateLoadingState;
+
                         return SettingsMenuListWidget(
-                          onServiceabilityChanged: (isOn) {},
+                          isServiceOn: _isServiceOn,
+                          isServiceabilityLoading: isLoading,
+                          onServiceabilityChanged: (isOn) {
+                            blocContext.read<ServiceabilityBloc>().add(
+                                  UpdateServiceabilityEvent(
+                                    adminIsServiceable: isOn,
+                                  ),
+                                );
+                          },
                           onTimeSlotsTap: () {},
                           onLogoutTap: () =>
                               LogoutConfirmationDialog.show(blocContext),

@@ -1,61 +1,63 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/theme/app_color.dart';
 import 'settings_menu_item_widget.dart';
 
-class SettingsMenuListWidget extends StatefulWidget {
+class SettingsMenuListWidget extends StatelessWidget {
+  final bool isServiceOn;
+  final bool isServiceabilityLoading;
   final ValueChanged<bool>? onServiceabilityChanged;
   final VoidCallback? onTimeSlotsTap;
   final VoidCallback? onLogoutTap;
   final VoidCallback? onDeleteAccountTap;
-  final bool initialServiceability;
 
   const SettingsMenuListWidget({
     super.key,
+    this.isServiceOn = true,
+    this.isServiceabilityLoading = false,
     this.onServiceabilityChanged,
     this.onTimeSlotsTap,
     this.onLogoutTap,
     this.onDeleteAccountTap,
-    this.initialServiceability = true,
   });
-
-  @override
-  State<SettingsMenuListWidget> createState() => _SettingsMenuListWidgetState();
-}
-
-class _SettingsMenuListWidgetState extends State<SettingsMenuListWidget> {
-  late bool _isServiceOn;
-
-  @override
-  void initState() {
-    super.initState();
-    _isServiceOn = widget.initialServiceability;
-  }
-
-  void _toggleServiceability(bool value) {
-    setState(() {
-      _isServiceOn = value;
-    });
-    widget.onServiceabilityChanged?.call(value);
-  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // 1. Serviceability with Toggle Switch
+        // 1. Serviceability with Toggle Switch & Loading Spinner
         SettingsMenuItemWidget(
           icon: Icons.room_service_rounded,
           title: 'Serviceability',
           subtitle: 'Turn your service ON/OFF',
-          onTap: () => _toggleServiceability(!_isServiceOn),
-          trailing: CupertinoSwitch(
-            value: _isServiceOn,
-            activeTrackColor: AppColor.primary,
-            inactiveTrackColor: AppColor.gray.withValues(alpha: 0.35),
-            onChanged: _toggleServiceability,
-          ),
+          onTap: isServiceabilityLoading
+              ? null
+              : () => onServiceabilityChanged?.call(!isServiceOn),
+          trailing: isServiceabilityLoading
+              ? SizedBox(
+                  width: 44.w,
+                  height: 28.h,
+                  child: Center(
+                    child: SizedBox(
+                      width: 20.r,
+                      height: 20.r,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2.2,
+                        color: AppColor.primary,
+                      ),
+                    ),
+                  ),
+                )
+              : CupertinoSwitch(
+                  value: isServiceOn,
+                  activeTrackColor: AppColor.primary,
+                  inactiveTrackColor: AppColor.gray.withValues(alpha: 0.35),
+                  onChanged: isServiceabilityLoading
+                      ? null
+                      : onServiceabilityChanged,
+                ),
         ),
         14.hS,
 
@@ -64,7 +66,7 @@ class _SettingsMenuListWidgetState extends State<SettingsMenuListWidget> {
           icon: Icons.access_time_rounded,
           title: 'Time Slots',
           subtitle: 'Add and manage your time slots',
-          onTap: widget.onTimeSlotsTap,
+          onTap: onTimeSlotsTap,
         ),
         14.hS,
 
@@ -74,7 +76,7 @@ class _SettingsMenuListWidgetState extends State<SettingsMenuListWidget> {
           title: 'Logout',
           subtitle: 'Sign out from your account',
           showTrailing: false,
-          onTap: widget.onLogoutTap,
+          onTap: onLogoutTap,
         ),
         14.hS,
 
@@ -87,7 +89,7 @@ class _SettingsMenuListWidgetState extends State<SettingsMenuListWidget> {
           iconColor: AppColor.bright_red,
           iconBackgroundColor: AppColor.bright_red.withValues(alpha: 0.1),
           titleColor: AppColor.bright_red,
-          onTap: widget.onDeleteAccountTap,
+          onTap: onDeleteAccountTap,
         ),
       ],
     );

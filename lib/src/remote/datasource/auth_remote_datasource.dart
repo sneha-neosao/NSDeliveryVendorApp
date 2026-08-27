@@ -20,6 +20,8 @@ sealed class RemoteDataSource {
   Future<OrdersListResponse> OrdersList(String token, OrdersListParams params);
 
   Future<OrderDetailsResponse> OrderDetails(String token, OrderDetailsParams params);
+
+  Future<ServiceabilityResponse> ServiceabilityUpdate(String token, ServiceabilityUpdateParams params);
 }
 
 class RemoteDataSourceImpl implements RemoteDataSource {
@@ -212,6 +214,38 @@ class RemoteDataSourceImpl implements RemoteDataSource {
       );
 
       final respData = OrderDetailsResponse.fromJson(response);
+      return respData;
+    } on EmptyException {
+      throw AuthException();
+    } catch (e) {
+      logger.e(e);
+      if (e.toString() == noElement) {
+        throw AuthException();
+      }
+      if (e is ApiException) {
+        rethrow;
+      }
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<ServiceabilityResponse> ServiceabilityUpdate(
+      String token, ServiceabilityUpdateParams params) async {
+    try {
+      final response = await _helper.execute(
+        method: Method.put,
+        url: ApiUrl.serviceabilityUpdate,
+        data: params.toFormData(),
+        options: Options(
+          contentType: Headers.formUrlEncodedContentType,
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      final respData = ServiceabilityResponse.fromJson(response);
       return respData;
     } on EmptyException {
       throw AuthException();

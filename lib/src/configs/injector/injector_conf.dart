@@ -58,6 +58,11 @@ void configureDepedencies() {
 
   getIt.registerFactory(() => OrderDetailsBloc(getIt<OrderDetailsUseCase>()));
 
+  /// Dashboard / Serviceability
+  getIt.registerLazySingleton(() => ServiceabilityUpdateUseCase(getIt<AuthRepositoryImpl>()));
+
+  getIt.registerFactory(() => ServiceabilityBloc(getIt<ServiceabilityUpdateUseCase>()));
+
   /// Other api blocs
 
 
