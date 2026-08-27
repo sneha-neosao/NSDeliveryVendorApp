@@ -63,15 +63,15 @@ class SettingsMenuListWidget extends StatelessWidget {
         ),
         14.hS,
 
-        // 2. Change Password with Lock Icon & Arrow
-        SettingsMenuItemWidget(
-          icon: Icons.lock_outline_rounded,
-          title: 'Change Password',
-          subtitle: 'Update your account password',
-          showTrailing: true,
-          onTap: onChangePasswordTap,
-        ),
-        14.hS,
+        // // 2. Change Password with Lock Icon & Arrow
+        // SettingsMenuItemWidget(
+        //   icon: Icons.lock_outline_rounded,
+        //   title: 'Change Password',
+        //   subtitle: 'Update your account password',
+        //   showTrailing: true,
+        //   onTap: onChangePasswordTap,
+        // ),
+        // 14.hS,
 
         // 3. Time Slots with Clock Icon & Arrow
         SettingsMenuItemWidget(

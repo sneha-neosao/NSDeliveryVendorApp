@@ -16,7 +16,6 @@ import '../widgets/auth_background_widget.dart';
 import '../widgets/auth_forgot_password_widget.dart';
 import '../widgets/auth_header_widget.dart';
 import '../widgets/auth_logo_widget.dart';
-import '../widgets/auth_register_footer_widget.dart';
 import '../widgets/login_input_widget.dart';
 
 /// Login Screen displaying the authentication interface and calling the login API via Dual-BLoC.
@@ -91,13 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   // Forgot Password Link
                   AuthForgotPasswordWidget(
-                    onTap: () {
-                      appSnackBar(
-                        context,
-                        AppColor.primary,
-                        'Forgot password feature coming soon',
-                      );
-                    },
+                    onTap: () => context.push(AppRoute.forgotPassword.path),
                   ),
                   28.hS,
 
@@ -126,18 +119,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         text: 'Login',
                         isLoading: isLoading,
                         onPressed: () => _login(context),
-                      );
-                    },
-                  ),
-                  24.hS,
-
-                  // Register Link
-                  AuthRegisterFooterWidget(
-                    onRegisterTap: () {
-                      appSnackBar(
-                        context,
-                        AppColor.primary,
-                        'Registration feature coming soon',
                       );
                     },
                   ),
