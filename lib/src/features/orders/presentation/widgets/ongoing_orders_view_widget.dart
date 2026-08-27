@@ -1,21 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'order_card_widget.dart';
+import '../../../../core/extensions/integer_sizedbox_extension.dart';
+import '../../../../core/theme/app_color.dart';
+import '../../../../remote/models/orders_list_model/orders_list_response.dart';
+import '../../bloc/orders_list_bloc/orders_list_bloc.dart';
+import 'ongoing_order_card_widget.dart';
+import 'ongoing_orders_shimmer_widget.dart';
 import 'order_empty_state_widget.dart';
 
 class OngoingOrdersViewWidget extends StatefulWidget {
-  final List<OrderCardItemData> orders;
-  final VoidCallback? onRefresh;
-  final ValueChanged<OrderCardItemData>? onOrderTap;
-  final ValueChanged<OrderCardItemData>? onPrimaryActionTap;
-
-  const OngoingOrdersViewWidget({
-    super.key,
-    required this.orders,
-    this.onRefresh,
-    this.onOrderTap,
-    this.onPrimaryActionTap,
-  });
+  const OngoingOrdersViewWidget({super.key});
 
   @override
   State<OngoingOrdersViewWidget> createState() =>
@@ -23,117 +18,141 @@ class OngoingOrdersViewWidget extends StatefulWidget {
 }
 
 class _OngoingOrdersViewWidgetState extends State<OngoingOrdersViewWidget> {
-  // int _selectedFilterIndex = 0;
-  // final List<String> _filters = ['All', 'New', 'Preparing', 'Ready'];
+  final ScrollController _scrollController = ScrollController();
 
-  // List<OrderCardItemData> get _filteredOrders {
-  //   if (_selectedFilterIndex == 0) return widget.orders;
-  //   if (_selectedFilterIndex == 1) {
-  //     return widget.orders
-  //         .where((o) => o.status == OrderStatus.newOrder)
-  //         .toList();
-  //   }
-  //   if (_selectedFilterIndex == 2) {
-  //     return widget.orders
-  //         .where((o) => o.status == OrderStatus.preparing)
-  //         .toList();
-  //   }
-  //   if (_selectedFilterIndex == 3) {
-  //     return widget.orders
-  //         .where((o) => o.status == OrderStatus.ready)
-  //         .toList();
-  //   }
-  //   return widget.orders;
-  // }
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final current = _scrollController.offset;
+    if (current >= maxScroll - 200) {
+      final state = context.read<OrdersListBloc>().state;
+      if (state is OrdersListSuccessState &&
+          !state.isLoadingMore &&
+          !state.hasReachedMax) {
+        context.read<OrdersListBloc>().add(LoadMoreOrdersListEvent());
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.orders.isEmpty) {
-      return OrderEmptyStateWidget(
-        title: 'No Ongoing Orders',
-        description:
-            'You do not have any active or incoming orders right now. New customer orders will appear here automatically.',
-        icon: Icons.access_time_rounded,
-        onRefresh: widget.onRefresh,
-      );
-    }
+    return BlocBuilder<OrdersListBloc, OrdersListState>(
+      builder: (context, state) {
+        // ── Initial / Loading ──────────────────────────────────
+        if (state is OrdersListInitialState ||
+            state is OrdersListLoadingState) {
+          return const SingleChildScrollView(
+            physics: NeverScrollableScrollPhysics(),
+            child: OngoingOrdersShimmerWidget(),
+          );
+        }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // // ── Filter Chips Row (Commented Out) ────────────────────
-        // SizedBox(
-        //   height: 34.h,
-        //   child: ListView.separated(
-        //     scrollDirection: Axis.horizontal,
-        //     padding: EdgeInsets.symmetric(horizontal: 18.w),
-        //     itemCount: _filters.length,
-        //     separatorBuilder: (context, index) => 8.wS,
-        //     itemBuilder: (context, index) {
-        //       final isSelected = _selectedFilterIndex == index;
-        //       return GestureDetector(
-        //         onTap: () {
-        //           setState(() {
-        //             _selectedFilterIndex = index;
-        //           });
-        //         },
-        //         behavior: HitTestBehavior.opaque,
-        //         child: AnimatedContainer(
-        //           duration: const Duration(milliseconds: 200),
-        //           padding: EdgeInsets.symmetric(
-        //             horizontal: 14.w,
-        //             vertical: 6.h,
-        //           ),
-        //           decoration: BoxDecoration(
-        //             color: isSelected ? AppColor.primary : AppColor.pureWhite,
-        //             borderRadius: BorderRadius.circular(18.r),
-        //             border: Border.all(
-        //               color: isSelected
-        //                   ? AppColor.primary
-        //                   : AppColor.border.withValues(alpha: 0.7),
-        //               width: 1.r,
-        //             ),
-        //           ),
-        //           child: Center(
-        //             child: Text(
-        //               _filters[index],
-        //               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-        //                     color: isSelected
-        //                         ? AppColor.pureWhite
-        //                         : AppColor.textSecondary,
-        //                     fontWeight:
-        //                         isSelected ? FontWeight.w600 : FontWeight.w500,
-        //                     fontSize: 12.sp,
-        //                   ),
-        //             ),
-        //           ),
-        //         ),
-        //       );
-        //     },
-        //   ),
-        // ),
-        // 14.hS,
-
-        // ── Orders List ─────────────────────────────────────────
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 18.w),
-          child: ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.zero,
-            itemCount: widget.orders.length,
-            itemBuilder: (context, index) {
-              final item = widget.orders[index];
-              return OrderCardWidget(
-                order: item,
-                onTap: () => widget.onOrderTap?.call(item),
-                onPrimaryActionTap: () =>
-                    widget.onPrimaryActionTap?.call(item),
-              );
+        // ── Failure ────────────────────────────────────────────
+        if (state is OrdersListFailureState) {
+          return OrderEmptyStateWidget(
+            title: 'Failed to load orders',
+            description: state.message,
+            icon: Icons.error_outline_rounded,
+            onRefresh: () {
+              context
+                  .read<OrdersListBloc>()
+                  .add(const GetOrdersListEvent(page: 1, limit: 10));
             },
-          ),
-        ),
-      ],
+          );
+        }
+
+        // ── Success ────────────────────────────────────────────
+        if (state is OrdersListSuccessState) {
+          final items = state.items;
+
+          if (items.isEmpty) {
+            return OrderEmptyStateWidget(
+              title: 'No Ongoing Orders',
+              description:
+                  'You do not have any active or incoming orders right now. New customer orders will appear here automatically.',
+              icon: Icons.access_time_rounded,
+              onRefresh: () {
+                context
+                    .read<OrdersListBloc>()
+                    .add(const GetOrdersListEvent(page: 1, limit: 10));
+              },
+            );
+          }
+
+          final totalCount = items.length + (state.isLoadingMore ? 1 : 0);
+
+          return RefreshIndicator(
+            color: AppColor.primary,
+            backgroundColor: AppColor.pureWhite,
+            onRefresh: () async {
+              context
+                  .read<OrdersListBloc>()
+                  .add(const GetOrdersListEvent(page: 1, limit: 10));
+            },
+            child: _OngoingOrdersListView(
+              items: items,
+              totalCount: totalCount,
+              isLoadingMore: state.isLoadingMore,
+              scrollController: _scrollController,
+            ),
+          );
+        }
+
+        return const SizedBox.shrink();
+      },
+    );
+  }
+}
+
+class _OngoingOrdersListView extends StatelessWidget {
+  final List<OrdersListItem> items;
+  final int totalCount;
+  final bool isLoadingMore;
+  final ScrollController scrollController;
+
+  const _OngoingOrdersListView({
+    required this.items,
+    required this.totalCount,
+    required this.isLoadingMore,
+    required this.scrollController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      controller: scrollController,
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: EdgeInsets.only(
+        left: 18.w,
+        right: 18.w,
+        top: 4.h,
+        bottom: 100.h,
+      ),
+      itemCount: totalCount,
+      separatorBuilder: (_, _) => 0.hS,
+      itemBuilder: (context, index) {
+        // Bottom 1-card shimmer while paginating
+        if (index == items.length) {
+          return const OngoingOrdersShimmerWidget(
+            itemCount: 1,
+            padding: EdgeInsets.zero,
+          );
+        }
+        return OngoingOrderCardWidget(order: items[index]);
+      },
     );
   }
 }
