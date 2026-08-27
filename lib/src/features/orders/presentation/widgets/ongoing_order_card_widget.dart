@@ -189,9 +189,10 @@ class OngoingOrderCardWidget extends StatelessWidget {
                   ],
                 ),
 
-                // ── Footer Action ─────────────────────────────────────
+                // ── Footer: Payment status & View Details ───────────
                 12.hS,
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     // Payment status badge
                     Container(
@@ -215,10 +216,37 @@ class OngoingOrderCardWidget extends StatelessWidget {
                                 ),
                       ),
                     ),
-                    const Spacer(),
-                    _buildActionButton(context, status),
+                    GestureDetector(
+                      onTap: onTap,
+                      behavior: HitTestBehavior.opaque,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'View Details',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color: AppColor.primary,
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                          4.wS,
+                          Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 11.r,
+                            color: AppColor.primary,
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
+
+                // ── Big Status-Specific Action Button ─────────────────
+                _buildBigActionButton(context, status),
               ],
             ),
           ),
@@ -227,63 +255,146 @@ class OngoingOrderCardWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton(BuildContext context, String status) {
-    String label;
-    switch (status.toUpperCase()) {
-      case 'PENDING':
-        label = 'Accept Order';
-        break;
-      case 'PREPARING':
-        label = 'Mark Ready';
-        break;
-      case 'READY':
-        label = 'Dispatch';
-        break;
-      default:
-        label = 'View Details';
+  Widget _buildBigActionButton(BuildContext context, String status) {
+    final s = status.toUpperCase();
+
+    if (s == 'PENDING' || s == 'NEW' || s == 'PLACED') {
+      // 1. PENDING -> Active ACCEPT & PREPARE button
+      return Padding(
+        padding: EdgeInsets.only(top: 12.h),
+        child: GestureDetector(
+          onTap: onPrimaryActionTap ?? onTap,
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(vertical: 11.h),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [AppColor.primary, AppColor.darkOrange],
+              ),
+              borderRadius: BorderRadius.circular(14.r),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColor.primary.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.restaurant_rounded,
+                  size: 16.r,
+                  color: AppColor.pureWhite,
+                ),
+                8.wS,
+                Text(
+                  'ACCEPT & PREPARE',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: AppColor.pureWhite,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    } else if (s == 'PREPARING' || s == 'COOKING') {
+      // 2. PREPARING -> Inactive READY FOR PICKUP button
+      return Padding(
+        padding: EdgeInsets.only(top: 12.h),
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(vertical: 11.h),
+          decoration: BoxDecoration(
+            color: AppColor.gray.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(
+              color: AppColor.gray.withValues(alpha: 0.35),
+              width: 1.r,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.hourglass_empty_rounded,
+                size: 16.r,
+                color: AppColor.slateGrey,
+              ),
+              8.wS,
+              Text(
+                'READY FOR PICKUP',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: AppColor.slateGrey,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                    ),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else if (s == 'DEL_ACCEPTED') {
+      // 3. DEL_ACCEPTED -> Active READY FOR PICKUP button
+      return Padding(
+        padding: EdgeInsets.only(top: 12.h),
+        child: GestureDetector(
+          onTap: onPrimaryActionTap ?? onTap,
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(vertical: 11.h),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [AppColor.primary, AppColor.darkOrange],
+              ),
+              borderRadius: BorderRadius.circular(14.r),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColor.primary.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.check_circle_outline_rounded,
+                  size: 16.r,
+                  color: AppColor.pureWhite,
+                ),
+                8.wS,
+                Text(
+                  'READY FOR PICKUP',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: AppColor.pureWhite,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
     }
 
-    return GestureDetector(
-      onTap: onPrimaryActionTap ?? onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [AppColor.primary, AppColor.darkOrange],
-          ),
-          borderRadius: BorderRadius.circular(14.r),
-          boxShadow: [
-            BoxShadow(
-              color: AppColor.primary.withValues(alpha: 0.3),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColor.pureWhite,
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
-            4.wS,
-            Icon(
-              Icons.arrow_forward_rounded,
-              size: 13.r,
-              color: AppColor.pureWhite,
-            ),
-          ],
-        ),
-      ),
-    );
+    // 4. All other statuses -> do not show any button
+    return const SizedBox.shrink();
   }
 
   Widget _buildStatusChip(BuildContext context, String status) {
@@ -293,41 +404,71 @@ class OngoingOrderCardWidget extends StatelessWidget {
 
     switch (status.toUpperCase()) {
       case 'PENDING':
-        bg = AppColor.orangeTint;
-        fg = AppColor.primaryDark;
+      case 'NEW':
+      case 'PLACED':
+        bg = AppColor.statusPendingBg;
+        fg = AppColor.statusPending;
         label = 'New Order';
         break;
+      case 'ACCEPTED':
+      case 'CONFIRMED':
+      case 'DEL_ACCEPTED':
+        bg = AppColor.statusConfirmedBg;
+        fg = AppColor.statusConfirmed;
+        label = 'Accepted';
+        break;
       case 'PREPARING':
-        bg = AppColor.orangeTint2;
-        fg = AppColor.primary;
+      case 'COOKING':
+        bg = AppColor.statusPreparingBg;
+        fg = AppColor.statusPreparing;
         label = 'Preparing';
         break;
       case 'READY':
-        bg = AppColor.green.withValues(alpha: 0.12);
-        fg = AppColor.green;
+      case 'READY_FOR_PICKUP':
+        bg = AppColor.statusReadyBg;
+        fg = AppColor.statusReady;
         label = 'Ready';
         break;
+      case 'OUT_FOR_DELIVERY':
+      case 'ON_THE_WAY':
+      case 'DISPATCHED':
+        bg = AppColor.statusDispatchedBg;
+        fg = AppColor.statusDispatched;
+        label = 'Dispatched';
+        break;
       case 'DELIVERED':
-        bg = AppColor.green.withValues(alpha: 0.12);
-        fg = AppColor.green;
+      case 'COMPLETED':
+        bg = AppColor.statusDeliveredBg;
+        fg = AppColor.statusDelivered;
         label = 'Delivered';
         break;
       case 'CANCELLED':
-        bg = AppColor.bright_red.withValues(alpha: 0.12);
-        fg = AppColor.bright_red;
+        bg = AppColor.statusCancelledBg;
+        fg = AppColor.statusCancelled;
         label = 'Cancelled';
         break;
+      case 'REJECTED':
+        bg = AppColor.statusCancelledBg;
+        fg = AppColor.statusCancelled;
+        label = 'Rejected';
+        break;
       default:
-        bg = AppColor.orangeTint;
-        fg = AppColor.primaryDark;
-        label = status;
+        bg = AppColor.whiteShade;
+        fg = AppColor.slateGrey;
+        label = (status.isNotEmpty)
+            ? status[0].toUpperCase() + status.substring(1).toLowerCase()
+            : '—';
     }
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: fg.withValues(alpha: 0.35),
+          width: 1.r,
+        ),
       ),
       child: Text(
         label,

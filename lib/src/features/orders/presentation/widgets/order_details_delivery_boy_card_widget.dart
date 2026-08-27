@@ -22,7 +22,6 @@ class OrderDetailsDeliveryBoyCardWidget extends StatelessWidget {
     }
 
     final boy = deliveryBoy!;
-    final statusColor = _statusColor(boy.assignmentStatus);
 
     return Container(
       width: double.infinity,
@@ -70,7 +69,7 @@ class OrderDetailsDeliveryBoyCardWidget extends StatelessWidget {
               ),
               if (boy.assignmentStatus != null &&
                   boy.assignmentStatus!.isNotEmpty)
-                _buildBadge(boy.assignmentStatus, statusColor),
+                _buildBadge(boy.assignmentStatus),
             ],
           ),
 
@@ -165,36 +164,47 @@ class OrderDetailsDeliveryBoyCardWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildBadge(String? status, Color color) {
+  Widget _buildBadge(String? status) {
+    Color bg;
+    Color fg;
+
+    switch ((status ?? '').toUpperCase()) {
+      case 'ACCEPTED':
+        bg = AppColor.statusDeliveredBg;
+        fg = AppColor.statusDelivered;
+        break;
+      case 'REJECTED':
+        bg = AppColor.statusCancelledBg;
+        fg = AppColor.statusCancelled;
+        break;
+      case 'ASSIGNED':
+        bg = AppColor.statusConfirmedBg;
+        fg = AppColor.statusConfirmed;
+        break;
+      case 'PENDING':
+        bg = AppColor.statusPendingBg;
+        fg = AppColor.statusPending;
+        break;
+      default:
+        bg = AppColor.whiteShade;
+        fg = AppColor.slateGrey;
+    }
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
+        color: bg,
         borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(color: color.withValues(alpha: 0.4), width: 1.r),
+        border: Border.all(color: fg.withValues(alpha: 0.35), width: 1.r),
       ),
       child: Text(
         status ?? '',
         style: AppFont.style(
           fontSize: 10.sp,
           fontWeight: FontWeight.w800,
-          color: color,
+          color: fg,
         ),
       ),
     );
-  }
-
-  Color _statusColor(String? status) {
-    switch ((status ?? '').toUpperCase()) {
-      case 'ACCEPTED':
-        return AppColor.green;
-      case 'REJECTED':
-        return AppColor.bright_red;
-      case 'ASSIGNED':
-      case 'PENDING':
-        return AppColor.secondary;
-      default:
-        return AppColor.slateGrey;
-    }
   }
 }

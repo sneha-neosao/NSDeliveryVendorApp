@@ -17,7 +17,6 @@ class OrderHistoryCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = _statusColor(order.orderStatus);
     final paymentColor = _paymentColor(order.paymentStatus);
     final formattedDate = _formatDate(order.createdAt);
 
@@ -50,14 +49,14 @@ class OrderHistoryCardWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '#${order.id ?? '---'}',
+                  'ORD_${order.id ?? '---'}',
                   style: AppFont.style(
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w800,
                     color: AppColor.charcoal,
                   ),
                 ),
-                _buildStatusBadge(order.orderStatus, statusColor),
+                _buildStatusBadge(order.orderStatus),
               ],
             ),
 
@@ -199,37 +198,85 @@ class OrderHistoryCardWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusBadge(String? status, Color color) {
+  Widget _buildStatusBadge(String? status) {
+    Color bg;
+    Color fg;
+    String label;
+
+    switch ((status ?? '').toUpperCase()) {
+      case 'PENDING':
+      case 'NEW':
+      case 'PLACED':
+        bg = AppColor.statusPendingBg;
+        fg = AppColor.statusPending;
+        label = 'New Order';
+        break;
+      case 'ACCEPTED':
+      case 'CONFIRMED':
+      case 'DEL_ACCEPTED':
+        bg = AppColor.statusConfirmedBg;
+        fg = AppColor.statusConfirmed;
+        label = 'Accepted';
+        break;
+      case 'PREPARING':
+      case 'COOKING':
+        bg = AppColor.statusPreparingBg;
+        fg = AppColor.statusPreparing;
+        label = 'Preparing';
+        break;
+      case 'READY':
+      case 'READY_FOR_PICKUP':
+        bg = AppColor.statusReadyBg;
+        fg = AppColor.statusReady;
+        label = 'Ready';
+        break;
+      case 'OUT_FOR_DELIVERY':
+      case 'ON_THE_WAY':
+      case 'DISPATCHED':
+        bg = AppColor.statusDispatchedBg;
+        fg = AppColor.statusDispatched;
+        label = 'Dispatched';
+        break;
+      case 'DELIVERED':
+      case 'COMPLETED':
+        bg = AppColor.statusDeliveredBg;
+        fg = AppColor.statusDelivered;
+        label = 'Delivered';
+        break;
+      case 'CANCELLED':
+        bg = AppColor.statusCancelledBg;
+        fg = AppColor.statusCancelled;
+        label = 'Cancelled';
+        break;
+      case 'REJECTED':
+        bg = AppColor.statusCancelledBg;
+        fg = AppColor.statusCancelled;
+        label = 'Rejected';
+        break;
+      default:
+        bg = AppColor.whiteShade;
+        fg = AppColor.slateGrey;
+        label = (status != null && status.isNotEmpty)
+            ? status[0].toUpperCase() + status.substring(1).toLowerCase()
+            : '—';
+    }
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
+        color: bg,
         borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: color.withValues(alpha: 0.4), width: 1.r),
+        border: Border.all(color: fg.withValues(alpha: 0.35), width: 1.r),
       ),
       child: Text(
-        _formatStatus(status),
+        label,
         style: AppFont.style(
           fontSize: 11.sp,
           fontWeight: FontWeight.w800,
-          color: color,
+          color: fg,
         ),
       ),
     );
-  }
-
-  Color _statusColor(String? status) {
-    switch ((status ?? '').toUpperCase()) {
-      case 'DELIVERED':
-        return AppColor.green;
-      case 'REJECTED':
-      case 'CANCELLED':
-        return AppColor.bright_red;
-      case 'PENDING':
-        return AppColor.secondary;
-      default:
-        return AppColor.slateGrey;
-    }
   }
 
   Color _paymentColor(String? status) {

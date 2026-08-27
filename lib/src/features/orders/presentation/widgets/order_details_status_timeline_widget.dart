@@ -187,17 +187,29 @@ class OrderDetailsStatusTimelineWidget extends StatelessWidget {
 
   Color _statusColor(String? status) {
     switch ((status ?? '').toUpperCase()) {
+      case 'PENDING':
+      case 'NEW':
+      case 'PLACED':
+        return AppColor.statusPending;
+      case 'ACCEPTED':
+      case 'CONFIRMED':
+        return AppColor.statusConfirmed;
+      case 'PREPARING':
+      case 'COOKING':
+        return AppColor.statusPreparing;
+      case 'READY':
+      case 'READY_FOR_PICKUP':
+        return AppColor.statusReady;
+      case 'OUT_FOR_DELIVERY':
+      case 'ON_THE_WAY':
+      case 'DISPATCHED':
+        return AppColor.statusDispatched;
       case 'DELIVERED':
-        return AppColor.green;
+      case 'COMPLETED':
+        return AppColor.statusDelivered;
       case 'REJECTED':
       case 'CANCELLED':
-        return AppColor.bright_red;
-      case 'PENDING':
-        return AppColor.secondary;
-      case 'PREPARING':
-        return AppColor.primary;
-      case 'READY':
-        return AppColor.green;
+        return AppColor.statusCancelled;
       default:
         return AppColor.slateGrey;
     }

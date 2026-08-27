@@ -42,4 +42,26 @@ class AppColor {
   ///app api calls success and failure toast colors
   static const bright_red = Color(0xFFE62222);
   static const green = Color(0xFF188510);
+
+  /// Order Status Specific Colors & Backgrounds
+  static const Color statusPending = Color(0xFFD97706);
+  static const Color statusPendingBg = Color(0xFFFEF3C7);
+
+  static const Color statusConfirmed = Color(0xFF2563EB);
+  static const Color statusConfirmedBg = Color(0xFFDBEAFE);
+
+  static const Color statusPreparing = Color(0xFFEA580C);
+  static const Color statusPreparingBg = Color(0xFFFFEDD5);
+
+  static const Color statusReady = Color(0xFF0D9488);
+  static const Color statusReadyBg = Color(0xFFCCFBF1);
+
+  static const Color statusDispatched = Color(0xFF7C3AED);
+  static const Color statusDispatchedBg = Color(0xFFEDE9FE);
+
+  static const Color statusDelivered = Color(0xFF16A34A);
+  static const Color statusDeliveredBg = Color(0xFFDCFCE7);
+
+  static const Color statusCancelled = Color(0xFFDC2626);
+  static const Color statusCancelledBg = Color(0xFFFEE2E2);
 }
