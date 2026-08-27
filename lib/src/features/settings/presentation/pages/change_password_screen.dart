@@ -85,8 +85,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       // Update Password App Button
                       AppButtonWidget(
                         text: 'Update Password',
-                        borderRadius: 16.r,
-                        height: 50.h,
                         isLoading: _isLoading,
                         onPressed: _handleUpdatePassword,
                       ),

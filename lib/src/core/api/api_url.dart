@@ -11,6 +11,8 @@ class ApiUrl {
 
   static const logout = "/auth/logout";
 
+  static const forgotPassword = "/auth/forgot-password";
+
   static const itemsList = "/items/list";
 
   static const orderHistory = "/orders/history";

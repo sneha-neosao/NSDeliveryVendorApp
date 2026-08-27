@@ -40,6 +40,10 @@ void configureDepedencies() {
     ),
   );
 
+  getIt.registerLazySingleton(() => ForgotPasswordUseCase(getIt<AuthRepositoryImpl>()));
+
+  getIt.registerFactory(() => ForgotPasswordBloc(getIt<ForgotPasswordUseCase>()));
+
   /// Menu Management
   getIt.registerLazySingleton(() => ItemsListUseCase(getIt<AuthRepositoryImpl>()));
 

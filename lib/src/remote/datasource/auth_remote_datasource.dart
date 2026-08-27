@@ -11,6 +11,8 @@ sealed class RemoteDataSource {
 
   Future<CommonResponse> logout(String token, String refreshToken);
 
+  Future<ForgotPasswordResponse> ForgotPassword(ForgotPasswordParams params);
+
   /// Items
   Future<ItemsListResponse> itemsList(String token, ItemsListParams params);
 
@@ -92,6 +94,35 @@ class RemoteDataSourceImpl implements RemoteDataSource {
       }
       if (e is ApiException) {
         throw e; // rethrow as-is
+      }
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<ForgotPasswordResponse> ForgotPassword(
+      ForgotPasswordParams params) async {
+    try {
+      final response = await _helper.execute(
+        method: Method.post,
+        url: ApiUrl.forgotPassword,
+        data: params.toJson(),
+        options: Options(
+          contentType: Headers.jsonContentType,
+        ),
+      );
+
+      final respData = ForgotPasswordResponse.fromJson(response);
+      return respData;
+    } on EmptyException {
+      throw AuthException();
+    } catch (e) {
+      logger.e(e);
+      if (e.toString() == noElement) {
+        throw AuthException();
+      }
+      if (e is ApiException) {
+        rethrow;
       }
       throw ServerException();
     }
