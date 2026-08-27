@@ -44,6 +44,10 @@ void configureDepedencies() {
 
   getIt.registerFactory(() => ForgotPasswordBloc(getIt<ForgotPasswordUseCase>()));
 
+  getIt.registerLazySingleton(() => UpdateFirebaseTokenUseCase(getIt<AuthRepositoryImpl>()));
+
+  getIt.registerFactory(() => UpdateFirebaseTokenBloc(getIt<UpdateFirebaseTokenUseCase>()));
+
   /// Menu Management
   getIt.registerLazySingleton(() => ItemsListUseCase(getIt<AuthRepositoryImpl>()));
 

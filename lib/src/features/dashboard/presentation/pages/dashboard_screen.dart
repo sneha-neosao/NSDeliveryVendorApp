@@ -6,9 +6,11 @@ import '../../../../configs/injector/injector_conf.dart';
 import '../../../../core/blocs/theme/theme_bloc.dart';
 import '../../../../core/blocs/translate/translate_bloc.dart';
 import '../../../../core/extensions/integer_sizedbox_extension.dart';
+import '../../../../core/services/notification_service.dart';
 import '../../../../core/session/session_manager.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../routes/app_route_path.dart';
+import '../../../login/bloc/update_firebase_token_bloc/update_firebase_token_bloc.dart';
 import '../../bloc/performance_metrics_bloc/performance_metrics_bloc.dart';
 import '../../bloc/summary_stats_bloc/summary_stats_bloc.dart';
 import '../widgets/dashboard_header_widget.dart';
@@ -39,6 +41,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
       setState(() {
         _entityName = name;
       });
+    }
+  }
+
+  Future<void> _updateFirebaseToken(BuildContext blocContext) async {
+    try {
+      final token = await NoficationService.getToken();
+      if (token != null && token.isNotEmpty && mounted) {
+        blocContext
+            .read<UpdateFirebaseTokenBloc>()
+            .add(UpdateFirebaseTokenSubmitEvent(token));
+      }
+    } catch (_) {
+      // Silent execution
     }
   }
 
@@ -75,9 +90,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
           create: (_) =>
               getIt<PerformanceMetricsBloc>()..add(FetchPerformanceMetricsEvent()),
         ),
+        BlocProvider(
+          create: (_) => getIt<UpdateFirebaseTokenBloc>(),
+        ),
       ],
       child: Builder(
         builder: (blocContext) {
+          // Trigger silent Firebase token update on initial render
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _updateFirebaseToken(blocContext);
+          });
+
           return Scaffold(
             backgroundColor: AppColor.white,
             body: Column(
@@ -103,6 +126,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       blocContext
                           .read<PerformanceMetricsBloc>()
                           .add(FetchPerformanceMetricsEvent());
+                      _updateFirebaseToken(blocContext);
                       await _loadUserSession();
                     },
                     child: SingleChildScrollView(

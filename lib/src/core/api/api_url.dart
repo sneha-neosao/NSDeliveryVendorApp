@@ -40,5 +40,7 @@ class ApiUrl {
   static const dashboardPerformanceMetrics = "/dashboard/performance-metrics";
 
   static const offersList = "/offers/list";
+
+  static const updateFirebaseToken = "/auth/update-firebase-token";
 }
 

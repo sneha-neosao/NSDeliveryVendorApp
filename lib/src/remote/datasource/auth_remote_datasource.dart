@@ -13,6 +13,8 @@ sealed class RemoteDataSource {
 
   Future<ForgotPasswordResponse> ForgotPassword(ForgotPasswordParams params);
 
+  Future<UpdateFirebaseTokenResponse> UpdateFirebaseToken(String token, UpdateFirebaseTokenParams params);
+
   /// Items
   Future<ItemsListResponse> itemsList(String token, ItemsListParams params);
 
@@ -578,6 +580,38 @@ class RemoteDataSourceImpl implements RemoteDataSource {
       );
 
       final respData = OffersListResponse.fromJson(response);
+      return respData;
+    } on EmptyException {
+      throw AuthException();
+    } catch (e) {
+      logger.e(e);
+      if (e.toString() == noElement) {
+        throw AuthException();
+      }
+      if (e is ApiException) {
+        rethrow;
+      }
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<UpdateFirebaseTokenResponse> UpdateFirebaseToken(
+      String token, UpdateFirebaseTokenParams params) async {
+    try {
+      final response = await _helper.execute(
+        method: Method.put,
+        url: ApiUrl.updateFirebaseToken,
+        data: params.toJson(),
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+
+      final respData = UpdateFirebaseTokenResponse.fromJson(response);
       return respData;
     } on EmptyException {
       throw AuthException();
