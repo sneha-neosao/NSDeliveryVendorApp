@@ -29,6 +29,9 @@ abstract class Repository {
   /// Dashboard / Serviceability
   Future<Either<Failure, ServiceabilityResponse>> serviceability_update(ServiceabilityUpdateParams params);
 
+  /// Settings / Time Slots
+  Future<Either<Failure, SlotsListResponse>> slots_list(SlotsListParams params);
+
 }
 
 class AuthRepositoryImpl implements Repository {
@@ -260,6 +263,42 @@ class AuthRepositoryImpl implements Repository {
 
           final respData =
               await _remoteDataSource.ServiceabilityUpdate(token, params);
+
+          if (respData.status != 200) {
+            return Left(
+                CredentialFailure(respData.message ?? "Something went wrong"));
+          }
+
+          return Right(respData);
+        } on ServerException {
+          return Left(ServerFailure(mapFailureToMessage(ServerFailure(""))));
+        } catch (e) {
+          if (e is ApiException) {
+            return Left(ApiFailure(e.message));
+          }
+          return Left(ServerFailure(mapFailureToMessage(ServerFailure(""))));
+        }
+      },
+      notConnected: () async {
+        try {
+          return Left(
+              InternetFailure(mapFailureToMessage(InternetFailure(""))));
+        } on CacheException {
+          return Left(CacheFailure(mapFailureToMessage(CacheFailure(""))));
+        }
+      },
+    );
+  }
+
+  @override
+  Future<Either<Failure, SlotsListResponse>> slots_list(
+      SlotsListParams params) {
+    return _networkInfo.check<SlotsListResponse>(
+      connected: () async {
+        try {
+          String token = await SessionManager.getAuthToken() ?? "";
+
+          final respData = await _remoteDataSource.SlotsList(token, params);
 
           if (respData.status != 200) {
             return Left(

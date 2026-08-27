@@ -5,7 +5,8 @@ enum AppRoute {
   orders(path: "/orders"),
   menu(path: "/menu"),
   settings(path: "/settings"),
-  orderDetails(path: "/order_details");
+  orderDetails(path: "/order_details"),
+  slots(path: "/slots");
 
   final String path;
 

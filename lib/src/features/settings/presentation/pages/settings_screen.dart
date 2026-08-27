@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../configs/injector/injector_conf.dart';
 import '../../../../core/blocs/theme/theme_bloc.dart';
 import '../../../../core/blocs/translate/translate_bloc.dart';
 import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/session/session_manager.dart';
 import '../../../../core/theme/app_color.dart';
+import '../../../../routes/app_route_path.dart';
 import '../../../dashboard/bloc/serviceability_bloc/serviceability_bloc.dart';
 import '../../../login/bloc/auth_login_bloc/auth_login_bloc.dart';
 import '../../../widgets/snackbar_widget.dart';
@@ -168,7 +170,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   ),
                                 );
                           },
-                          onTimeSlotsTap: () {},
+                          onTimeSlotsTap: () =>
+                              context.push(AppRoute.slots.path),
                           onLogoutTap: () =>
                               LogoutConfirmationDialog.show(blocContext),
                           onDeleteAccountTap: () {},

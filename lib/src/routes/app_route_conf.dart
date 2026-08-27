@@ -36,6 +36,13 @@ class AppRouteConf {
           return _fadePage(OrderDetailsScreen(uuId: uuId));
         },
       ),
+      GoRoute(
+        path: AppRoute.slots.path,
+        name: AppRoute.slots.name,
+        pageBuilder: (context, state) {
+          return _fadePage(const SlotScreen());
+        },
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainScreen(navigationShell: navigationShell);
