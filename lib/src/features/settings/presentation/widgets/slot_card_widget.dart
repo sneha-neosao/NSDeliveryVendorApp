@@ -7,10 +7,14 @@ import '../../../../remote/models/slots_model/slots_list_response.dart';
 
 class SlotCardWidget extends StatelessWidget {
   final SlotItem slot;
+  final VoidCallback? onEditTap;
+  final VoidCallback? onDeleteTap;
 
   const SlotCardWidget({
     super.key,
     required this.slot,
+    this.onEditTap,
+    this.onDeleteTap,
   });
 
   String _formatTime(String? timeStr) {
@@ -58,73 +62,127 @@ class SlotCardWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Row 1: Day Badge + Active/Inactive Status Chip
+            // Row 1: Day Badge + Status Chip + Edit & Delete Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // Day of Week
-                Row(
-                  children: [
-                    Container(
-                      width: 36.r,
-                      height: 36.r,
-                      decoration: BoxDecoration(
-                        color: AppColor.orangeTint2,
-                        borderRadius: BorderRadius.circular(10.r),
-                      ),
-                      child: Icon(
-                        Icons.calendar_today_rounded,
-                        color: AppColor.primary,
-                        size: 18.r,
-                      ),
-                    ),
-                    10.wS,
-                    Text(
-                      slot.dayOfWeek ?? 'Unknown Day',
-                      style: AppFont.style(
-                        color: AppColor.charcoal,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-
-                // Status Chip
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
-                  decoration: BoxDecoration(
-                    color: isActive
-                        ? AppColor.statusDeliveredBg
-                        : AppColor.gray.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
+                Expanded(
                   child: Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
-                        width: 7.r,
-                        height: 7.r,
+                        width: 36.r,
+                        height: 36.r,
                         decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: isActive
-                              ? AppColor.statusDelivered
-                              : AppColor.slateGrey,
+                          color: AppColor.orangeTint2,
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
+                        child: Icon(
+                          Icons.calendar_today_rounded,
+                          color: AppColor.primary,
+                          size: 18.r,
                         ),
                       ),
-                      6.wS,
-                      Text(
-                        isActive ? 'Active' : 'Inactive',
-                        style: AppFont.style(
-                          color: isActive
-                              ? AppColor.statusDelivered
-                              : AppColor.slateGrey,
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w700,
+                      10.wS,
+                      Flexible(
+                        child: Text(
+                          slot.dayOfWeek ?? 'Unknown Day',
+                          softWrap: true,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppFont.style(
+                            color: AppColor.charcoal,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ],
                   ),
+                ),
+                8.wS,
+
+                // Right Group: Status Chip + Edit Button + Delete Button
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Status Chip
+                    Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 9.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        color: isActive
+                            ? AppColor.statusDeliveredBg
+                            : AppColor.gray.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 7.r,
+                            height: 7.r,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isActive
+                                  ? AppColor.statusDelivered
+                                  : AppColor.slateGrey,
+                            ),
+                          ),
+                          5.wS,
+                          Text(
+                            isActive ? 'Active' : 'Inactive',
+                            style: AppFont.style(
+                              color: isActive
+                                  ? AppColor.statusDelivered
+                                  : AppColor.slateGrey,
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    8.wS,
+
+                    // Edit Icon Button
+                    GestureDetector(
+                      onTap: onEditTap,
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        width: 30.r,
+                        height: 30.r,
+                        decoration: BoxDecoration(
+                          color: AppColor.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Icon(
+                          Icons.edit_outlined,
+                          color: AppColor.primary,
+                          size: 16.r,
+                        ),
+                      ),
+                    ),
+                    6.wS,
+
+                    // Delete Icon Button
+                    GestureDetector(
+                      onTap: onDeleteTap,
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        width: 30.r,
+                        height: 30.r,
+                        decoration: BoxDecoration(
+                          color: AppColor.bright_red.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Icon(
+                          Icons.delete_outline_rounded,
+                          color: AppColor.bright_red,
+                          size: 16.r,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

@@ -6,6 +6,9 @@ import '../../../../configs/injector/injector_conf.dart';
 import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../bloc/slots_list_bloc/slots_list_bloc.dart';
+import '../widgets/add_slot_bottom_sheet_widget.dart';
+import '../widgets/delete_slot_confirmation_dialog.dart';
+import '../widgets/edit_slot_bottom_sheet_widget.dart';
 import '../widgets/slot_card_widget.dart';
 import '../widgets/slot_empty_state_widget.dart';
 import '../widgets/slot_header_widget.dart';
@@ -20,20 +23,6 @@ class SlotScreen extends StatefulWidget {
 
 class _SlotScreenState extends State<SlotScreen> {
   final ScrollController _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      // Trigger load more pagination
-      // Note: we can dispatch using blocContext inside build or retrieve it from current tree
-    }
-  }
 
   @override
   void dispose() {
@@ -52,21 +41,24 @@ class _SlotScreenState extends State<SlotScreen> {
             ..add(const GetSlotsListEvent(page: 1, limit: 10)),
         ),
       ],
-      child: Scaffold(
-        backgroundColor: AppColor.white,
-        body: Column(
-          children: [
-            // ── Top Header ──────────────────────────────────────────
-            const SlotHeaderWidget(
-              title: 'Time Slots',
-              subtitle: 'Manage your operating hours',
-            ),
+      child: Builder(
+        builder: (blocContext) {
+          return Scaffold(
+            backgroundColor: AppColor.white,
+            // ── Floating Action Button at Bottom-Right Corner ────────
+            floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+            floatingActionButton: _buildAddSlotFab(blocContext),
+            body: Column(
+              children: [
+                // ── Top Header ──────────────────────────────────────────
+                const SlotHeaderWidget(
+                  title: 'Time Slots',
+                  subtitle: 'Manage your operating hours',
+                ),
 
-            // ── Body Content with Pagination & Shimmer ──────────────
-            Expanded(
-              child: Builder(
-                builder: (blocContext) {
-                  return BlocBuilder<SlotsListBloc, SlotsListState>(
+                // ── Body Content with Pagination & Shimmer ──────────────
+                Expanded(
+                  child: BlocBuilder<SlotsListBloc, SlotsListState>(
                     builder: (context, state) {
                       // ── Initial / Loading ───────────────────────────
                       if (state is SlotsListInitialState ||
@@ -129,16 +121,45 @@ class _SlotScreenState extends State<SlotScreen> {
                             child: ListView.separated(
                               controller: _scrollController,
                               physics: const AlwaysScrollableScrollPhysics(),
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 18.w,
-                                vertical: 14.h,
+                              padding: EdgeInsets.only(
+                                left: 18.w,
+                                right: 18.w,
+                                top: 14.h,
+                                bottom: 80.h,
                               ),
                               itemCount: items.length +
                                   (state.isLoadingMore ? 1 : 0),
                               separatorBuilder: (_, _) => 12.hS,
                               itemBuilder: (context, index) {
                                 if (index < items.length) {
-                                  return SlotCardWidget(slot: items[index]);
+                                  final slotItem = items[index];
+                                  return SlotCardWidget(
+                                    slot: slotItem,
+                                    onEditTap: () {
+                                      EditSlotBottomSheetWidget.show(
+                                        blocContext,
+                                        slot: slotItem,
+                                        onUpdateSlot: (
+                                          slot,
+                                          day,
+                                          startTime,
+                                          endTime,
+                                          isActive,
+                                        ) {
+                                          // Hook for slot update API
+                                        },
+                                      );
+                                    },
+                                    onDeleteTap: () {
+                                      DeleteSlotConfirmationDialog.show(
+                                        blocContext,
+                                        slot: slotItem,
+                                        onConfirmDelete: () {
+                                          // Hook for slot deletion API
+                                        },
+                                      );
+                                    },
+                                  );
                                 }
 
                                 // Bottom pagination loader
@@ -163,11 +184,55 @@ class _SlotScreenState extends State<SlotScreen> {
 
                       return const SizedBox.shrink();
                     },
-                  );
-                },
-              ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildAddSlotFab(BuildContext context) {
+    return Container(
+      width: 56.r,
+      height: 56.r,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColor.primary, AppColor.darkOrange],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColor.primary.withValues(alpha: 0.4),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: () {
+            AddSlotBottomSheetWidget.show(
+              context,
+              onCreateSlot: (day, startTime, endTime) {
+                // Hook to dispatch slot creation when API is available
+              },
+            );
+          },
+          child: Center(
+            child: Icon(
+              Icons.add_rounded,
+              color: AppColor.pureWhite,
+              size: 30.r,
+            ),
+          ),
         ),
       ),
     );
