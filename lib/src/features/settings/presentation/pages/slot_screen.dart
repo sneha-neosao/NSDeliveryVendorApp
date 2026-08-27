@@ -41,6 +41,7 @@ class _SlotScreenState extends State<SlotScreen> {
             ..add(const GetSlotsListEvent(page: 1, limit: 10)),
         ),
         BlocProvider(create: (_) => getIt<SlotCreateBloc>()),
+        BlocProvider(create: (_) => getIt<SlotUpdateBloc>()),
       ],
       child: Builder(
         builder: (blocContext) {
@@ -140,14 +141,11 @@ class _SlotScreenState extends State<SlotScreen> {
                                       EditSlotBottomSheetWidget.show(
                                         blocContext,
                                         slot: slotItem,
-                                        onUpdateSlot: (
-                                          slot,
-                                          day,
-                                          startTime,
-                                          endTime,
-                                          isActive,
-                                        ) {
-                                          // Hook for slot update API
+                                        onSlotUpdated: () {
+                                          blocContext
+                                              .read<SlotsListBloc>()
+                                              .add(const GetSlotsListEvent(
+                                                  page: 1, limit: 10));
                                         },
                                       );
                                     },

@@ -24,5 +24,7 @@ class ApiUrl {
   static const slotsList = "/slots/list";
 
   static const slotCreate = "/slots/create";
+
+  static const slotUpdate = "/slots/update";
 }
 

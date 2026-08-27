@@ -72,6 +72,10 @@ void configureDepedencies() {
 
   getIt.registerFactory(() => SlotCreateBloc(getIt<SlotCreateUseCase>()));
 
+  getIt.registerLazySingleton(() => SlotUpdateUseCase(getIt<AuthRepositoryImpl>()));
+
+  getIt.registerFactory(() => SlotUpdateBloc(getIt<SlotUpdateUseCase>()));
+
   /// Other api blocs
 
 
