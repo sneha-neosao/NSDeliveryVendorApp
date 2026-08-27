@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../remote/models/orders_list_model/orders_list_response.dart';
+import '../../../../routes/app_route_path.dart';
 import '../../bloc/orders_list_bloc/orders_list_bloc.dart';
 import 'ongoing_order_card_widget.dart';
 import 'ongoing_orders_shimmer_widget.dart';
@@ -151,7 +153,20 @@ class _OngoingOrdersListView extends StatelessWidget {
             padding: EdgeInsets.zero,
           );
         }
-        return OngoingOrderCardWidget(order: items[index]);
+        final item = items[index];
+        return OngoingOrderCardWidget(
+          order: item,
+          onTap: () {
+            if (item.uuId != null && item.uuId!.isNotEmpty) {
+              context.push(AppRoute.orderDetails.path, extra: item.uuId);
+            }
+          },
+          onPrimaryActionTap: () {
+            if (item.uuId != null && item.uuId!.isNotEmpty) {
+              context.push(AppRoute.orderDetails.path, extra: item.uuId);
+            }
+          },
+        );
       },
     );
   }

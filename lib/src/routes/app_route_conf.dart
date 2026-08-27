@@ -28,6 +28,14 @@ class AppRouteConf {
         name: AppRoute.settings.name,
         pageBuilder: (context, state) => _fadePage(const SettingsScreen()),
       ),
+      GoRoute(
+        path: AppRoute.orderDetails.path,
+        name: AppRoute.orderDetails.name,
+        pageBuilder: (context, state) {
+          final uuId = state.extra as String? ?? '';
+          return _fadePage(OrderDetailsScreen(uuId: uuId));
+        },
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainScreen(navigationShell: navigationShell);

@@ -54,6 +54,10 @@ void configureDepedencies() {
 
   getIt.registerFactory(() => OrdersListBloc(getIt<OrdersListUseCase>()));
 
+  getIt.registerLazySingleton(() => OrderDetailsUseCase(getIt<AuthRepositoryImpl>()));
+
+  getIt.registerFactory(() => OrderDetailsBloc(getIt<OrderDetailsUseCase>()));
+
   /// Other api blocs
 
 

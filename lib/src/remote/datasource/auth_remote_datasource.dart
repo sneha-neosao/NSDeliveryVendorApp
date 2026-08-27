@@ -18,6 +18,8 @@ sealed class RemoteDataSource {
   Future<OrderHistoryResponse> orderHistory(String token, OrderHistoryParams params);
 
   Future<OrdersListResponse> OrdersList(String token, OrdersListParams params);
+
+  Future<OrderDetailsResponse> OrderDetails(String token, OrderDetailsParams params);
 }
 
 class RemoteDataSourceImpl implements RemoteDataSource {
@@ -178,6 +180,38 @@ class RemoteDataSourceImpl implements RemoteDataSource {
       );
 
       final respData = OrdersListResponse.fromJson(response);
+      return respData;
+    } on EmptyException {
+      throw AuthException();
+    } catch (e) {
+      logger.e(e);
+      if (e.toString() == noElement) {
+        throw AuthException();
+      }
+      if (e is ApiException) {
+        rethrow;
+      }
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<OrderDetailsResponse> OrderDetails(
+      String token, OrderDetailsParams params) async {
+    try {
+      final queryString = 'uu_id=${Uri.encodeComponent(params.uuId)}';
+
+      final response = await _helper.execute(
+        method: Method.get,
+        url: '${ApiUrl.orderDetails}?$queryString',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      final respData = OrderDetailsResponse.fromJson(response);
       return respData;
     } on EmptyException {
       throw AuthException();
