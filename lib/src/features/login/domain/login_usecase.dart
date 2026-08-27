@@ -7,7 +7,7 @@ import 'package:nsdelivery_vendor_app/src/core/usecases/usecase.dart';
 import 'package:nsdelivery_vendor_app/src/core/utils/failure_converter.dart';
 import 'package:nsdelivery_vendor_app/src/remote/models/auth_model/login_response.dart';
 
-import '../../../../core/extensions/string_validator_extension.dart';
+import '../../../core/extensions/string_validator_extension.dart';
 
 /// Domain layer use case for logging in into account, validates inputs and calls repository method.
 

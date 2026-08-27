@@ -9,7 +9,7 @@ import 'package:nsdelivery_vendor_app/src/core/utils/failure_converter.dart';
 import 'package:nsdelivery_vendor_app/src/remote/models/auth_model/login_response.dart';
 import 'package:nsdelivery_vendor_app/src/remote/models/common_response.dart';
 
-import '../../../../../configs/injector/injector.dart';
+import '../../../../configs/injector/injector.dart';
 
 part 'auth_login_event.dart';
 part 'auth_login_state.dart';

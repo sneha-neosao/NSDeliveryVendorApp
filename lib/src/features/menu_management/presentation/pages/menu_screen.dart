@@ -5,7 +5,7 @@ import '../../../../configs/injector/injector_conf.dart';
 import '../../../../core/blocs/theme/theme_bloc.dart';
 import '../../../../core/blocs/translate/translate_bloc.dart';
 import '../../../../core/theme/app_color.dart';
-import '../bloc/items_list_bloc/items_list_bloc.dart';
+import '../../bloc/item_list_bloc/items_list_bloc.dart';
 import '../widgets/menu_empty_state_widget.dart';
 import '../widgets/menu_header_widget.dart';
 import '../widgets/menu_items_list_view_widget.dart';

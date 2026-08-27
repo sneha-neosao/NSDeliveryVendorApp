@@ -7,7 +7,7 @@ import '../../../../core/blocs/translate/translate_bloc.dart';
 import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/session/session_manager.dart';
 import '../../../../core/theme/app_color.dart';
-import '../../../login/presentation/bloc/auth_login_bloc/auth_login_bloc.dart';
+import '../../../login/bloc/auth_login_bloc/auth_login_bloc.dart';
 import '../widgets/logout_confirmation_dialog.dart';
 import '../widgets/profile_info_card_widget.dart';
 import '../widgets/settings_header_widget.dart';

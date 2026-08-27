@@ -1,9 +1,9 @@
 import 'package:equatable/equatable.dart';
 import 'package:fpdart/fpdart.dart';
-import '../../../../core/errors/failures.dart';
-import '../../../../core/usecases/usecase.dart';
-import '../../../../remote/models/items_model/items_list_response.dart';
-import '../../../../remote/repositories/repository_impl.dart';
+import '../../../core/errors/failures.dart';
+import '../../../core/usecases/usecase.dart';
+import '../../../remote/models/items_model/items_list_response.dart';
+import '../../../remote/repositories/repository_impl.dart';
 
 /// Domain layer use case for fetching restaurant items list.
 class ItemsListUseCase implements UseCase<ItemsListResponse, ItemsListParams> {

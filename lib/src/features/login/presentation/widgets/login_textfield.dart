@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/extensions/string_validator_extension.dart';
 import '../../../../core/theme/app_color.dart';
-import '../bloc/auth_login_form/auth_login_form_bloc.dart';
+import '../../bloc/auth_login_form/auth_login_form_bloc.dart';
 
 class LoginTextField<T> extends StatefulWidget {
   final String label;

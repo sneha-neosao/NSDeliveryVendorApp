@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../../configs/injector/injector.dart';
+import '../../../../configs/injector/injector.dart';
 
 part 'auth_login_form_event.dart';
 part 'auth_login_form_state.dart';

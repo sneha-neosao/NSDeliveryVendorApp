@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../routes/app_route_path.dart';
-import '../../../login/presentation/bloc/auth_login_bloc/auth_login_bloc.dart';
+import '../../../login/bloc/auth_login_bloc/auth_login_bloc.dart';
 import '../../../widgets/app_alert_dialogue_widget.dart';
 import '../../../widgets/snackbar_widget.dart';
 

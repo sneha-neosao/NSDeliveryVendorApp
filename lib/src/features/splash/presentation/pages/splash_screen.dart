@@ -8,7 +8,7 @@ import '../../../../core/blocs/theme/theme_bloc.dart';
 import '../../../../core/blocs/translate/translate_bloc.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../routes/app_route_path.dart';
-import '../../../login/presentation/bloc/auth_login_bloc/auth_login_bloc.dart';
+import '../../../login/bloc/auth_login_bloc/auth_login_bloc.dart';
 import '../widgets/splash_image_widget.dart';
 
 /// Splash screen displayed when the application is launched.

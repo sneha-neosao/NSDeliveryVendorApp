@@ -1,38 +1,37 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../../core/utils/logger.dart';
-import '../../domain/items_list_usecase.dart';
-import '../../../../../remote/models/items_model/items_list_response.dart';
+import '../../../../core/utils/logger.dart';
+import '../../domain/order_history_usecase.dart';
+import '../../../../remote/models/order_history_model/order_history_response.dart';
 
-part 'items_list_event.dart';
-part 'items_list_state.dart';
+part 'order_history_event.dart';
+part 'order_history_state.dart';
 
-/// Handles state management for **Restaurant Items List** and its related operations.
-class ItemsListBloc extends Bloc<ItemsListEvent, ItemsListState> {
-  final ItemsListUseCase _itemsListUseCase;
+/// Handles state management for **Order History** and its related operations.
+class OrderHistoryBloc extends Bloc<OrderHistoryEvent, OrderHistoryState> {
+  final OrderHistoryUseCase _orderHistoryUseCase;
 
-  ItemsListBloc(this._itemsListUseCase) : super(ItemsListInitialState()) {
-    on<GetItemsListEvent>(_getItemsList);
-    on<LoadMoreItemsListEvent>(_loadMoreItemsList);
+  OrderHistoryBloc(this._orderHistoryUseCase)
+      : super(OrderHistoryInitialState()) {
+    on<GetOrderHistoryEvent>(_getOrderHistory);
+    on<LoadMoreOrderHistoryEvent>(_loadMoreOrderHistory);
   }
 
-  Future<void> _getItemsList(
-    GetItemsListEvent event,
-    Emitter<ItemsListState> emit,
+  Future<void> _getOrderHistory(
+    GetOrderHistoryEvent event,
+    Emitter<OrderHistoryState> emit,
   ) async {
-    emit(ItemsListLoadingState());
+    emit(OrderHistoryLoadingState());
 
-    final result = await _itemsListUseCase.call(
-      ItemsListParams(
+    final result = await _orderHistoryUseCase.call(
+      OrderHistoryParams(
         page: event.page,
         limit: event.limit,
-        q: event.q,
-        status: event.status,
       ),
     );
 
     result.fold(
-      (l) => emit(ItemsListFailureState(l.message)),
+      (l) => emit(OrderHistoryFailureState(l.message)),
       (r) {
         final items = r.data ?? [];
         final totalPages = r.pagination?.totalPages ?? 1;
@@ -41,13 +40,11 @@ class ItemsListBloc extends Bloc<ItemsListEvent, ItemsListState> {
             currentPage >= totalPages || items.length < event.limit;
 
         emit(
-          ItemsListSuccessState(
+          OrderHistorySuccessState(
             data: r,
             items: items,
             hasReachedMax: hasReachedMax,
             currentPage: currentPage,
-            currentQuery: event.q,
-            currentStatus: event.status,
             isLoadingMore: false,
           ),
         );
@@ -55,24 +52,22 @@ class ItemsListBloc extends Bloc<ItemsListEvent, ItemsListState> {
     );
   }
 
-  Future<void> _loadMoreItemsList(
-    LoadMoreItemsListEvent event,
-    Emitter<ItemsListState> emit,
+  Future<void> _loadMoreOrderHistory(
+    LoadMoreOrderHistoryEvent event,
+    Emitter<OrderHistoryState> emit,
   ) async {
     final currentState = state;
-    if (currentState is! ItemsListSuccessState) return;
+    if (currentState is! OrderHistorySuccessState) return;
     if (currentState.hasReachedMax || currentState.isLoadingMore) return;
 
     emit(currentState.copyWith(isLoadingMore: true));
 
     final nextPage = currentState.currentPage + 1;
 
-    final result = await _itemsListUseCase.call(
-      ItemsListParams(
+    final result = await _orderHistoryUseCase.call(
+      OrderHistoryParams(
         page: nextPage,
         limit: 10,
-        q: currentState.currentQuery,
-        status: currentState.currentStatus,
       ),
     );
 
@@ -80,7 +75,7 @@ class ItemsListBloc extends Bloc<ItemsListEvent, ItemsListState> {
       (l) => emit(currentState.copyWith(isLoadingMore: false)),
       (r) {
         final newItems = r.data ?? [];
-        final updatedItems = List<RestaurantItem>.from(currentState.items)
+        final updatedItems = List<OrderHistoryItem>.from(currentState.items)
           ..addAll(newItems);
         final totalPages = r.pagination?.totalPages ?? nextPage;
         final currentPage = r.pagination?.currentPage ?? nextPage;
@@ -103,7 +98,7 @@ class ItemsListBloc extends Bloc<ItemsListEvent, ItemsListState> {
 
   @override
   Future<void> close() {
-    logger.i("===== CLOSE ItemsListBloc =====");
+    logger.i("===== CLOSE OrderHistoryBloc =====");
     return super.close();
   }
 }
