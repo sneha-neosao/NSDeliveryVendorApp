@@ -15,6 +15,8 @@ sealed class RemoteDataSource {
 
   Future<UpdateFirebaseTokenResponse> UpdateFirebaseToken(String token, UpdateFirebaseTokenParams params);
 
+  Future<DeleteAccountResponse> DeleteAccount(String token);
+
   /// Items
   Future<ItemsListResponse> itemsList(String token, ItemsListParams params);
 
@@ -612,6 +614,35 @@ class RemoteDataSourceImpl implements RemoteDataSource {
       );
 
       final respData = UpdateFirebaseTokenResponse.fromJson(response);
+      return respData;
+    } on EmptyException {
+      throw AuthException();
+    } catch (e) {
+      logger.e(e);
+      if (e.toString() == noElement) {
+        throw AuthException();
+      }
+      if (e is ApiException) {
+        rethrow;
+      }
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<DeleteAccountResponse> DeleteAccount(String token) async {
+    try {
+      final response = await _helper.execute(
+        method: Method.delete,
+        url: ApiUrl.deleteAccount,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      final respData = DeleteAccountResponse.fromJson(response);
       return respData;
     } on EmptyException {
       throw AuthException();

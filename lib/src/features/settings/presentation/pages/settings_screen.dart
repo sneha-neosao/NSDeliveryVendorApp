@@ -12,6 +12,7 @@ import '../../../../routes/app_route_path.dart';
 import '../../../dashboard/bloc/serviceability_bloc/serviceability_bloc.dart';
 import '../../../login/bloc/auth_login_bloc/auth_login_bloc.dart';
 import '../../../widgets/snackbar_widget.dart';
+import '../widgets/delete_account_confirmation_dialog.dart';
 import '../widgets/logout_confirmation_dialog.dart';
 import '../widgets/profile_info_card_widget.dart';
 import '../widgets/settings_header_widget.dart';
@@ -62,6 +63,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       providers: [
         BlocProvider(create: (_) => getIt<AuthLoginBloc>()),
         BlocProvider(create: (_) => getIt<ServiceabilityBloc>()),
+        BlocProvider(create: (_) => getIt<DeleteAccountBloc>()),
         BlocProvider(create: (_) => getIt<ThemeBloc>()),
         BlocProvider(create: (_) => getIt<TranslateBloc>()),
       ],
@@ -176,7 +178,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               context.push(AppRoute.slots.path),
                           onLogoutTap: () =>
                               LogoutConfirmationDialog.show(blocContext),
-                          onDeleteAccountTap: () {},
+                          onDeleteAccountTap: () =>
+                              DeleteAccountConfirmationDialog.show(
+                                  blocContext),
                         );
                       },
                     ),

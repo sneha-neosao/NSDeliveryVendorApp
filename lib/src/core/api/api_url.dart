@@ -42,5 +42,7 @@ class ApiUrl {
   static const offersList = "/offers/list";
 
   static const updateFirebaseToken = "/auth/update-firebase-token";
+
+  static const deleteAccount = "/auth/delete-account";
 }
 

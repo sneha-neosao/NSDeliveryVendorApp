@@ -20,6 +20,8 @@ abstract class Repository {
 
   Future<Either<Failure, UpdateFirebaseTokenResponse>> update_firebase_token(UpdateFirebaseTokenParams params);
 
+  Future<Either<Failure, DeleteAccountResponse>> delete_account(NoParams params);
+
   /// Items
   Future<Either<Failure, ItemsListResponse>> items_list(ItemsListParams params);
 
@@ -681,6 +683,42 @@ class AuthRepositoryImpl implements Repository {
 
           final respData =
               await _remoteDataSource.UpdateFirebaseToken(token, params);
+
+          if (respData.status != 200) {
+            return Left(
+                CredentialFailure(respData.message ?? "Something went wrong"));
+          }
+
+          return Right(respData);
+        } on ServerException {
+          return Left(ServerFailure(mapFailureToMessage(ServerFailure(""))));
+        } catch (e) {
+          if (e is ApiException) {
+            return Left(ApiFailure(e.message));
+          }
+          return Left(ServerFailure(mapFailureToMessage(ServerFailure(""))));
+        }
+      },
+      notConnected: () async {
+        try {
+          return Left(
+              InternetFailure(mapFailureToMessage(InternetFailure(""))));
+        } on CacheException {
+          return Left(CacheFailure(mapFailureToMessage(CacheFailure(""))));
+        }
+      },
+    );
+  }
+
+  @override
+  Future<Either<Failure, DeleteAccountResponse>> delete_account(
+      NoParams params) {
+    return _networkInfo.check<DeleteAccountResponse>(
+      connected: () async {
+        try {
+          String token = await SessionManager.getAuthToken() ?? "";
+
+          final respData = await _remoteDataSource.DeleteAccount(token);
 
           if (respData.status != 200) {
             return Left(
