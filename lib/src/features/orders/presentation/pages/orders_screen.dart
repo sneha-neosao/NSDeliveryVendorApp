@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../../configs/injector/injector.dart';
 import '../../../../configs/injector/injector_conf.dart';
-import '../../../../core/blocs/theme/theme_bloc.dart';
-import '../../../../core/blocs/translate/translate_bloc.dart';
 import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/theme/app_color.dart';
 import '../widgets/ongoing_orders_view_widget.dart';
@@ -22,7 +21,7 @@ class OrdersScreen extends StatefulWidget {
 class _OrdersScreenState extends State<OrdersScreen> {
   int _selectedTabIndex = 0;
 
-  // Sample ongoing orders
+  // Sample ongoing orders (mock — to be replaced with API)
   final List<OrderCardItemData> _ongoingOrders = const [
     OrderCardItemData(
       orderId: '#NSD-9481',
@@ -53,58 +52,30 @@ class _OrdersScreenState extends State<OrdersScreen> {
     ),
   ];
 
-  // Sample order history
-  final List<OrderCardItemData> _orderHistory = const [
-    OrderCardItemData(
-      orderId: '#NSD-9465',
-      customerName: 'Sneha Patel',
-      itemsSummary: '1x Dal Tadka, 2x Naan, 1x Steamed Rice',
-      itemCount: 4,
-      totalAmount: '₹290.00',
-      time: 'Yesterday, 8:45 PM',
-      status: OrderStatus.delivered,
-    ),
-    OrderCardItemData(
-      orderId: '#NSD-9459',
-      customerName: 'Vikram Joshi',
-      itemsSummary: '2x Double Cheese Burger, 1x Large Peri Peri Fries',
-      itemCount: 3,
-      totalAmount: '₹380.00',
-      time: 'Yesterday, 7:15 PM',
-      status: OrderStatus.delivered,
-    ),
-    OrderCardItemData(
-      orderId: '#NSD-9450',
-      customerName: 'Rohan Gupta',
-      itemsSummary: '1x Masala Dosa, 1x Idli Sambhar (2 pcs)',
-      itemCount: 2,
-      totalAmount: '₹180.00',
-      time: '24 Aug, 1:20 PM',
-      status: OrderStatus.cancelled,
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => getIt<ThemeBloc>()),
         BlocProvider(create: (_) => getIt<TranslateBloc>()),
+        BlocProvider(
+          create: (_) => getIt<OrderHistoryBloc>()
+            ..add(const GetOrderHistoryEvent(page: 1, limit: 10)),
+        ),
       ],
       child: Scaffold(
         backgroundColor: AppColor.white,
         body: Column(
           children: [
             // Top Compact Orange Curved Header
-            const OrdersHeaderWidget(
-              title: 'Orders',
-            ),
+            const OrdersHeaderWidget(title: 'Orders'),
             14.hS,
-            // Innovative Modern Tab Switcher
+
+            // Tab Switcher
             OrdersTabSelectorWidget(
               selectedIndex: _selectedTabIndex,
               ongoingCount: _ongoingOrders.length,
-              historyCount: _orderHistory.length,
+              historyCount: 0,
               onTabChanged: (index) {
                 setState(() {
                   _selectedTabIndex = index;
@@ -112,25 +83,23 @@ class _OrdersScreenState extends State<OrdersScreen> {
               },
             ),
             14.hS,
-            // Content View (Ongoing vs History) with safe bottom padding for floating bar
+
+            // Tab Content
             Expanded(
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.only(
-                  bottom: 100.h, // Bottom clearance for floating bottom bar
-                ),
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 250),
-                  child: _selectedTabIndex == 0
-                      ? OngoingOrdersViewWidget(
-                          key: const ValueKey('ongoing_orders_view'),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                child: _selectedTabIndex == 0
+                    ? SingleChildScrollView(
+                        key: const ValueKey('ongoing_orders_view'),
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: EdgeInsets.only(bottom: 100.h),
+                        child: OngoingOrdersViewWidget(
                           orders: _ongoingOrders,
-                        )
-                      : OrderHistoryViewWidget(
-                          key: const ValueKey('order_history_view'),
-                          orders: _orderHistory,
                         ),
-                ),
+                      )
+                    : const OrderHistoryViewWidget(
+                        key: ValueKey('order_history_view'),
+                      ),
               ),
             ),
           ],

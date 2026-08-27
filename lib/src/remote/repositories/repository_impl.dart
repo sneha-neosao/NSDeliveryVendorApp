@@ -19,6 +19,9 @@ abstract class Repository {
   /// Items
   Future<Either<Failure, ItemsListResponse>> items_list(ItemsListParams params);
 
+  /// Orders
+  Future<Either<Failure, OrderHistoryResponse>> order_history(OrderHistoryParams params);
+
 }
 
 class AuthRepositoryImpl implements Repository {
@@ -127,6 +130,39 @@ class AuthRepositoryImpl implements Repository {
         } catch (e) {
           if (e is ApiException) {
             return Left(ApiFailure(e.message)); // rethrow as-is
+          }
+          return Left(ServerFailure(mapFailureToMessage(ServerFailure(""))));
+        }
+      },
+      notConnected: () async {
+        try {
+          return Left(InternetFailure(mapFailureToMessage(InternetFailure(""))));
+        } on CacheException {
+          return Left(CacheFailure(mapFailureToMessage(CacheFailure(""))));
+        }
+      },
+    );
+  }
+
+  @override
+  Future<Either<Failure, OrderHistoryResponse>> order_history(OrderHistoryParams params) {
+    return _networkInfo.check<OrderHistoryResponse>(
+      connected: () async {
+        try {
+          String token = await SessionManager.getAuthToken() ?? "";
+
+          final respData = await _remoteDataSource.orderHistory(token, params);
+
+          if (respData.status != 200) {
+            return Left(CredentialFailure(respData.message ?? "Something went wrong"));
+          }
+
+          return Right(respData);
+        } on ServerException {
+          return Left(ServerFailure(mapFailureToMessage(ServerFailure(""))));
+        } catch (e) {
+          if (e is ApiException) {
+            return Left(ApiFailure(e.message));
           }
           return Left(ServerFailure(mapFailureToMessage(ServerFailure(""))));
         }

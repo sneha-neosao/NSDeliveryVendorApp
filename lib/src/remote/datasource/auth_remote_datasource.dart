@@ -12,7 +12,10 @@ sealed class RemoteDataSource {
   Future<CommonResponse> logout(String token, String refreshToken);
 
   /// Items
-  Future<ItemsListResponse> itemsList(String token,ItemsListParams params);
+  Future<ItemsListResponse> itemsList(String token, ItemsListParams params);
+
+  /// Orders
+  Future<OrderHistoryResponse> orderHistory(String token, OrderHistoryParams params);
 }
 
 class RemoteDataSourceImpl implements RemoteDataSource {
@@ -109,6 +112,38 @@ class RemoteDataSourceImpl implements RemoteDataSource {
       );
 
       final respData = ItemsListResponse.fromJson(response);
+      return respData;
+    } on EmptyException {
+      throw AuthException();
+    } catch (e) {
+      logger.e(e);
+      if (e.toString() == noElement) {
+        throw AuthException();
+      }
+      if (e is ApiException) {
+        rethrow;
+      }
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<OrderHistoryResponse> orderHistory(
+      String token, OrderHistoryParams params) async {
+    try {
+      final queryString = 'page=${params.page}&limit=${params.limit}';
+
+      final response = await _helper.execute(
+        method: Method.get,
+        url: '${ApiUrl.orderHistory}?$queryString',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      final respData = OrderHistoryResponse.fromJson(response);
       return respData;
     } on EmptyException {
       throw AuthException();

@@ -12,5 +12,7 @@ class ApiUrl {
   static const logout = "/auth/logout";
 
   static const itemsList = "/items/list";
+
+  static const orderHistory = "/orders/history";
 }
 

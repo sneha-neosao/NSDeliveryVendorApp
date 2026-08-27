@@ -7,9 +7,12 @@ export '../../features/login/presentation/bloc/auth_login_bloc/auth_login_bloc.d
 export '../../features/login/presentation/bloc/auth_login_form/auth_login_form_bloc.dart';
 export '../../features/menu_management/presentation/domain/items_list_usecase.dart';
 export '../../features/menu_management/presentation/bloc/items_list_bloc/items_list_bloc.dart';
+export '../../features/orders/domain/order_history_usecase.dart';
+export '../../features/orders/presentation/bloc/order_history_bloc/order_history_bloc.dart';
 export '../../remote/models/auth_model/login_response.dart';
 export '../../remote/models/common_response.dart';
 export '../../remote/models/items_model/items_list_response.dart';
+export '../../remote/models/order_history_model/order_history_response.dart';
 export '../../routes/app_route_conf.dart';
 export '../../core/network/network_checker.dart';
 export '../../core/api/api_helper.dart';
