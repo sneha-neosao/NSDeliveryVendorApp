@@ -5,7 +5,9 @@ import '../../../../configs/injector/injector.dart';
 import '../../../../configs/injector/injector_conf.dart';
 import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/theme/app_color.dart';
+import '../../../widgets/snackbar_widget.dart';
 import '../../bloc/order_details_bloc/order_details_bloc.dart';
+import '../../bloc/order_update_status_bloc/order_update_status_bloc.dart';
 import '../widgets/order_details_bill_summary_card_widget.dart';
 import '../widgets/order_details_bottom_action_widget.dart';
 import '../widgets/order_details_customer_card_widget.dart';
@@ -40,155 +42,188 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           create: (_) => getIt<OrderDetailsBloc>()
             ..add(GetOrderDetailsEvent(widget.uuId)),
         ),
+        BlocProvider(create: (_) => getIt<OrderUpdateStatusBloc>()),
       ],
-      child: Scaffold(
-        backgroundColor: AppColor.white,
-        body: Column(
-          children: [
-            // ── Top Curved Gradient Header ────────────────────────
-            BlocBuilder<OrderDetailsBloc, OrderDetailsState>(
-              builder: (context, state) {
-                String subtitle = '';
-                if (state is OrderDetailsSuccessState &&
-                    state.data.data?.id != null) {
-                  subtitle = 'ORD_${state.data.data!.id}';
-                }
-
-                return OrderDetailsHeaderWidget(
-                  title: 'Order Details',
-                  subtitle: subtitle,
-                );
-              },
-            ),
-
-            // ── Body Content with Shimmer & Error Handling ────────
-            Expanded(
-              child: BlocBuilder<OrderDetailsBloc, OrderDetailsState>(
-                builder: (context, state) {
-                  // ── Initial / Loading ────────────────────────────
-                  if (state is OrderDetailsInitialState ||
-                      state is OrderDetailsLoadingState) {
-                    return const OrderDetailsShimmerWidget();
-                  }
-
-                  // ── Failure ──────────────────────────────────────
-                  if (state is OrderDetailsFailureState) {
-                    return OrderEmptyStateWidget(
-                      title: 'Failed to load details',
-                      description: state.message,
-                      icon: Icons.error_outline_rounded,
-                      onRefresh: () {
-                        context
-                            .read<OrderDetailsBloc>()
-                            .add(GetOrderDetailsEvent(widget.uuId));
-                      },
-                    );
-                  }
-
-                  // ── Success ──────────────────────────────────────
-                  if (state is OrderDetailsSuccessState) {
-                    final order = state.data.data;
-                    if (order == null) {
-                      return OrderEmptyStateWidget(
-                        title: 'Order Not Found',
-                        description:
-                            'The requested order details could not be found.',
-                        icon: Icons.search_off_rounded,
-                        onRefresh: () {
-                          context
-                              .read<OrderDetailsBloc>()
-                              .add(GetOrderDetailsEvent(widget.uuId));
-                        },
-                      );
+      child: BlocConsumer<OrderUpdateStatusBloc, OrderUpdateStatusState>(
+        listener: (context, updateState) {
+          if (updateState is OrderUpdateStatusSuccessState) {
+            final message = updateState.data.message?.isNotEmpty == true
+                ? updateState.data.message!
+                : 'Order status updated successfully';
+            appSnackBar(context, AppColor.green, message);
+            // Stay on the same page and refresh details API
+            context
+                .read<OrderDetailsBloc>()
+                .add(GetOrderDetailsEvent(widget.uuId));
+          } else if (updateState is OrderUpdateStatusFailureState) {
+            appSnackBar(context, AppColor.bright_red, updateState.message);
+          }
+        },
+        builder: (context, updateState) {
+          return Scaffold(
+            backgroundColor: AppColor.white,
+            body: Column(
+              children: [
+                // ── Top Curved Gradient Header ────────────────────────
+                BlocBuilder<OrderDetailsBloc, OrderDetailsState>(
+                  builder: (context, state) {
+                    String subtitle = '';
+                    if (state is OrderDetailsSuccessState &&
+                        state.data.data?.id != null) {
+                      subtitle = 'ORD_${state.data.data!.id}';
                     }
 
-                    return Column(
-                      children: [
-                        // Scrollable Content
-                        Expanded(
-                          child: RefreshIndicator(
-                            color: AppColor.primary,
-                            backgroundColor: AppColor.pureWhite,
-                            onRefresh: () async {
+                    return OrderDetailsHeaderWidget(
+                      title: 'Order Details',
+                      subtitle: subtitle,
+                    );
+                  },
+                ),
+
+                // ── Body Content with Shimmer & Error Handling ────────
+                Expanded(
+                  child: BlocBuilder<OrderDetailsBloc, OrderDetailsState>(
+                    builder: (context, state) {
+                      // ── Initial / Loading ────────────────────────────
+                      if (state is OrderDetailsInitialState ||
+                          state is OrderDetailsLoadingState) {
+                        return const OrderDetailsShimmerWidget();
+                      }
+
+                      // ── Failure ──────────────────────────────────────
+                      if (state is OrderDetailsFailureState) {
+                        return OrderEmptyStateWidget(
+                          title: 'Failed to load details',
+                          description: state.message,
+                          icon: Icons.error_outline_rounded,
+                          onRefresh: () {
+                            context
+                                .read<OrderDetailsBloc>()
+                                .add(GetOrderDetailsEvent(widget.uuId));
+                          },
+                        );
+                      }
+
+                      // ── Success ──────────────────────────────────────
+                      if (state is OrderDetailsSuccessState) {
+                        final order = state.data.data;
+                        if (order == null) {
+                          return OrderEmptyStateWidget(
+                            title: 'Order Not Found',
+                            description:
+                                'The requested order details could not be found.',
+                            icon: Icons.search_off_rounded,
+                            onRefresh: () {
                               context
                                   .read<OrderDetailsBloc>()
                                   .add(GetOrderDetailsEvent(widget.uuId));
                             },
-                            child: SingleChildScrollView(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 18.w,
-                                vertical: 14.h,
-                              ),
-                              child: Column(
-                                children: [
-                                  // Status Banner Card
-                                  OrderDetailsStatusCardWidget(order: order),
-                                  14.hS,
+                          );
+                        }
 
-                                  // Customer & Delivery Address Card
-                                  OrderDetailsCustomerCardWidget(order: order),
-                                  14.hS,
-
-                                  // Ordered Items List Card
-                                  OrderDetailsItemsCardWidget(
-                                    items: order.items ?? [],
-                                    totalItems: order.totalItems ??
-                                        order.items?.length ??
-                                        0,
+                        return Column(
+                          children: [
+                            // Scrollable Content
+                            Expanded(
+                              child: RefreshIndicator(
+                                color: AppColor.primary,
+                                backgroundColor: AppColor.pureWhite,
+                                onRefresh: () async {
+                                  context
+                                      .read<OrderDetailsBloc>()
+                                      .add(GetOrderDetailsEvent(widget.uuId));
+                                },
+                                child: SingleChildScrollView(
+                                  physics: const AlwaysScrollableScrollPhysics(),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 18.w,
+                                    vertical: 14.h,
                                   ),
-                                  14.hS,
+                                  child: Column(
+                                    children: [
+                                      // Status Banner Card
+                                      OrderDetailsStatusCardWidget(order: order),
+                                      14.hS,
 
-                                  // Assigned Delivery Boy Card (if available)
-                                  if (order.assignedDeliveryBoy != null) ...[
-                                    OrderDetailsDeliveryBoyCardWidget(
-                                      deliveryBoy: order.assignedDeliveryBoy,
-                                    ),
-                                    14.hS,
-                                  ],
+                                      // Customer & Delivery Address Card
+                                      OrderDetailsCustomerCardWidget(
+                                          order: order),
+                                      14.hS,
 
-                                  // Bill Summary Card
-                                  OrderDetailsBillSummaryCardWidget(
-                                      order: order),
-                                  14.hS,
+                                      // Ordered Items List Card
+                                      OrderDetailsItemsCardWidget(
+                                        items: order.items ?? [],
+                                        totalItems: order.totalItems ??
+                                            order.items?.length ??
+                                            0,
+                                      ),
+                                      14.hS,
 
-                                  // Status Logs Timeline (if available)
-                                  if (order.statusLogs != null &&
-                                      order.statusLogs!.isNotEmpty) ...[
-                                    OrderDetailsStatusTimelineWidget(
-                                      logs: order.statusLogs!,
-                                    ),
-                                    14.hS,
-                                  ],
+                                      // Assigned Delivery Boy Card (if available)
+                                      if (order.assignedDeliveryBoy != null) ...[
+                                        OrderDetailsDeliveryBoyCardWidget(
+                                          deliveryBoy:
+                                              order.assignedDeliveryBoy,
+                                        ),
+                                        14.hS,
+                                      ],
 
-                                  // Bottom Spacing
-                                  16.hS,
-                                ],
+                                      // Bill Summary Card
+                                      OrderDetailsBillSummaryCardWidget(
+                                          order: order),
+                                      14.hS,
+
+                                      // Status Logs Timeline (if available)
+                                      if (order.statusLogs != null &&
+                                          order.statusLogs!.isNotEmpty) ...[
+                                        OrderDetailsStatusTimelineWidget(
+                                          logs: order.statusLogs!,
+                                        ),
+                                        14.hS,
+                                      ],
+
+                                      // Bottom Spacing
+                                      16.hS,
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
 
-                        // Sticky Bottom Action Bar
-                        OrderDetailsBottomActionWidget(
-                          orderStatus: order.orderStatus,
-                          onAcceptTap: () {
-                            // Hook for accept & prepare API event
-                          },
-                          onReadyTap: () {
-                            // Hook for ready for pickup API event
-                          },
-                        ),
-                      ],
-                    );
-                  }
+                            // Sticky Bottom Action Bar
+                            OrderDetailsBottomActionWidget(
+                              orderStatus: order.orderStatus,
+                              isLoading:
+                                  updateState is OrderUpdateStatusLoadingState,
+                              onAcceptTap: () {
+                                context.read<OrderUpdateStatusBloc>().add(
+                                      UpdateOrderStatusEvent(
+                                        uuId: widget.uuId,
+                                        orderStatus: 'ACCEPTED',
+                                      ),
+                                    );
+                              },
+                              onReadyTap: () {
+                                context.read<OrderUpdateStatusBloc>().add(
+                                      UpdateOrderStatusEvent(
+                                        uuId: widget.uuId,
+                                        orderStatus: 'READY_FOR_PICKUP',
+                                      ),
+                                    );
+                              },
+                            ),
+                          ],
+                        );
+                      }
 
-                  return const SizedBox.shrink();
-                },
-              ),
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

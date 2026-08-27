@@ -23,6 +23,8 @@ sealed class RemoteDataSource {
 
   Future<OrderDetailsResponse> OrderDetails(String token, OrderDetailsParams params);
 
+  Future<OrderStatusUpdateResponse> OrderUpdateStatus(String token, OrderUpdateStatusParams params);
+
   Future<ServiceabilityResponse> ServiceabilityUpdate(String token, ServiceabilityUpdateParams params);
 
   Future<SlotsListResponse> SlotsList(String token, SlotsListParams params);
@@ -259,6 +261,39 @@ class RemoteDataSourceImpl implements RemoteDataSource {
       );
 
       final respData = OrderDetailsResponse.fromJson(response);
+      return respData;
+    } on EmptyException {
+      throw AuthException();
+    } catch (e) {
+      logger.e(e);
+      if (e.toString() == noElement) {
+        throw AuthException();
+      }
+      if (e is ApiException) {
+        rethrow;
+      }
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<OrderStatusUpdateResponse> OrderUpdateStatus(
+      String token, OrderUpdateStatusParams params) async {
+    try {
+      final queryString = 'uu_id=${Uri.encodeComponent(params.uuId)}';
+
+      final response = await _helper.execute(
+        method: Method.put,
+        url: '${ApiUrl.orderUpdateStatus}?$queryString',
+        data: params.toJson(),
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      final respData = OrderStatusUpdateResponse.fromJson(response);
       return respData;
     } on EmptyException {
       throw AuthException();

@@ -34,6 +34,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
           create: (_) => getIt<OrdersListBloc>()
             ..add(const GetOrdersListEvent(page: 1, limit: 10)),
         ),
+        BlocProvider(create: (_) => getIt<OrderUpdateStatusBloc>()),
       ],
       child: Scaffold(
         backgroundColor: AppColor.white,

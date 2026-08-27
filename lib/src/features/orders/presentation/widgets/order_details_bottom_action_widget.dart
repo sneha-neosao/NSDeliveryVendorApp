@@ -8,12 +8,14 @@ class OrderDetailsBottomActionWidget extends StatelessWidget {
   final String? orderStatus;
   final VoidCallback? onAcceptTap;
   final VoidCallback? onReadyTap;
+  final bool isLoading;
 
   const OrderDetailsBottomActionWidget({
     super.key,
     required this.orderStatus,
     this.onAcceptTap,
     this.onReadyTap,
+    this.isLoading = false,
   });
 
   static bool shouldShow(String? status) {
@@ -67,7 +69,7 @@ class OrderDetailsBottomActionWidget extends StatelessWidget {
     if (status == 'PENDING' || status == 'NEW' || status == 'PLACED') {
       // 1. PENDING -> Active ACCEPT & PREPARE button
       return GestureDetector(
-        onTap: onAcceptTap,
+        onTap: isLoading ? null : onAcceptTap,
         behavior: HitTestBehavior.opaque,
         child: Container(
           width: double.infinity,
@@ -87,26 +89,37 @@ class OrderDetailsBottomActionWidget extends StatelessWidget {
               ),
             ],
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.restaurant_rounded,
-                size: 18.r,
-                color: AppColor.pureWhite,
-              ),
-              8.wS,
-              Text(
-                'ACCEPT & PREPARE',
-                style: AppFont.style(
-                  color: AppColor.pureWhite,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.5,
+          child: isLoading
+              ? const Center(
+                  child: SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      color: AppColor.pureWhite,
+                    ),
+                  ),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.restaurant_rounded,
+                      size: 18.r,
+                      color: AppColor.pureWhite,
+                    ),
+                    8.wS,
+                    Text(
+                      'ACCEPT & PREPARE',
+                      style: AppFont.style(
+                        color: AppColor.pureWhite,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
         ),
       );
     } else if (status == 'PREPARING' || status == 'COOKING') {
@@ -146,7 +159,7 @@ class OrderDetailsBottomActionWidget extends StatelessWidget {
     } else if (status == 'DEL_ACCEPTED') {
       // 3. DEL_ACCEPTED -> Active READY FOR PICKUP button
       return GestureDetector(
-        onTap: onReadyTap,
+        onTap: isLoading ? null : onReadyTap,
         behavior: HitTestBehavior.opaque,
         child: Container(
           width: double.infinity,
@@ -166,26 +179,37 @@ class OrderDetailsBottomActionWidget extends StatelessWidget {
               ),
             ],
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.check_circle_outline_rounded,
-                size: 18.r,
-                color: AppColor.pureWhite,
-              ),
-              8.wS,
-              Text(
-                'READY FOR PICKUP',
-                style: AppFont.style(
-                  color: AppColor.pureWhite,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.5,
+          child: isLoading
+              ? const Center(
+                  child: SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      color: AppColor.pureWhite,
+                    ),
+                  ),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.check_circle_outline_rounded,
+                      size: 18.r,
+                      color: AppColor.pureWhite,
+                    ),
+                    8.wS,
+                    Text(
+                      'READY FOR PICKUP',
+                      style: AppFont.style(
+                        color: AppColor.pureWhite,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
         ),
       );
     }

@@ -128,7 +128,7 @@ class OrderDetailsStatusTimelineWidget extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  log.toStatus ?? '—',
+                                  _formatStatus(log.toStatus),
                                   style: AppFont.style(
                                     fontSize: 13.sp,
                                     fontWeight: FontWeight.w700,
@@ -183,6 +183,16 @@ class OrderDetailsStatusTimelineWidget extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _formatStatus(String? status) {
+    if (status == null || status.trim().isEmpty) return '—';
+    return status
+        .replaceAll('_', ' ')
+        .split(' ')
+        .where((s) => s.isNotEmpty)
+        .map((w) => w[0].toUpperCase() + w.substring(1).toLowerCase())
+        .join(' ');
   }
 
   Color _statusColor(String? status) {

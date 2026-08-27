@@ -196,6 +196,16 @@ class OrderDetailsStatusCardWidget extends StatelessWidget {
     );
   }
 
+  String _formatStatus(String? status) {
+    if (status == null || status.trim().isEmpty) return '—';
+    return status
+        .replaceAll('_', ' ')
+        .split(' ')
+        .where((s) => s.isNotEmpty)
+        .map((w) => w[0].toUpperCase() + w.substring(1).toLowerCase())
+        .join(' ');
+  }
+
   Widget _buildStatusBadge(String? status) {
     Color bg;
     Color fg;
@@ -211,10 +221,14 @@ class OrderDetailsStatusCardWidget extends StatelessWidget {
         break;
       case 'ACCEPTED':
       case 'CONFIRMED':
-      case 'DEL_ACCEPTED':
         bg = AppColor.statusConfirmedBg;
         fg = AppColor.statusConfirmed;
         label = 'Accepted';
+        break;
+      case 'DEL_ACCEPTED':
+        bg = AppColor.statusConfirmedBg;
+        fg = AppColor.statusConfirmed;
+        label = 'Del Accepted';
         break;
       case 'PREPARING':
       case 'COOKING':
@@ -226,14 +240,14 @@ class OrderDetailsStatusCardWidget extends StatelessWidget {
       case 'READY_FOR_PICKUP':
         bg = AppColor.statusReadyBg;
         fg = AppColor.statusReady;
-        label = 'Ready';
+        label = 'Ready For Pickup';
         break;
       case 'OUT_FOR_DELIVERY':
       case 'ON_THE_WAY':
       case 'DISPATCHED':
         bg = AppColor.statusDispatchedBg;
         fg = AppColor.statusDispatched;
-        label = 'Dispatched';
+        label = 'Out For Delivery';
         break;
       case 'DELIVERED':
       case 'COMPLETED':
@@ -254,9 +268,7 @@ class OrderDetailsStatusCardWidget extends StatelessWidget {
       default:
         bg = AppColor.whiteShade;
         fg = AppColor.slateGrey;
-        label = (status != null && status.isNotEmpty)
-            ? status[0].toUpperCase() + status.substring(1).toLowerCase()
-            : '—';
+        label = _formatStatus(status);
     }
 
     return Container(

@@ -9,12 +9,18 @@ class OngoingOrderCardWidget extends StatelessWidget {
   final OrdersListItem order;
   final VoidCallback? onTap;
   final VoidCallback? onPrimaryActionTap;
+  final VoidCallback? onAcceptTap;
+  final VoidCallback? onReadyTap;
+  final bool isActionLoading;
 
   const OngoingOrderCardWidget({
     super.key,
     required this.order,
     this.onTap,
     this.onPrimaryActionTap,
+    this.onAcceptTap,
+    this.onReadyTap,
+    this.isActionLoading = false,
   });
 
   @override
@@ -263,7 +269,9 @@ class OngoingOrderCardWidget extends StatelessWidget {
       return Padding(
         padding: EdgeInsets.only(top: 12.h),
         child: GestureDetector(
-          onTap: onPrimaryActionTap ?? onTap,
+          onTap: isActionLoading
+              ? null
+              : (onAcceptTap ?? onPrimaryActionTap ?? onTap),
           behavior: HitTestBehavior.opaque,
           child: Container(
             width: double.infinity,
@@ -283,26 +291,37 @@ class OngoingOrderCardWidget extends StatelessWidget {
                 ),
               ],
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.restaurant_rounded,
-                  size: 16.r,
-                  color: AppColor.pureWhite,
-                ),
-                8.wS,
-                Text(
-                  'ACCEPT & PREPARE',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            child: isActionLoading
+                ? Center(
+                    child: SizedBox(
+                      width: 20.r,
+                      height: 20.r,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2.2,
                         color: AppColor.pureWhite,
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
                       ),
-                ),
-              ],
-            ),
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.restaurant_rounded,
+                        size: 16.r,
+                        color: AppColor.pureWhite,
+                      ),
+                      8.wS,
+                      Text(
+                        'ACCEPT & PREPARE',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              color: AppColor.pureWhite,
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                            ),
+                      ),
+                    ],
+                  ),
           ),
         ),
       );
@@ -348,7 +367,9 @@ class OngoingOrderCardWidget extends StatelessWidget {
       return Padding(
         padding: EdgeInsets.only(top: 12.h),
         child: GestureDetector(
-          onTap: onPrimaryActionTap ?? onTap,
+          onTap: isActionLoading
+              ? null
+              : (onReadyTap ?? onPrimaryActionTap ?? onTap),
           behavior: HitTestBehavior.opaque,
           child: Container(
             width: double.infinity,
@@ -368,26 +389,37 @@ class OngoingOrderCardWidget extends StatelessWidget {
                 ),
               ],
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.check_circle_outline_rounded,
-                  size: 16.r,
-                  color: AppColor.pureWhite,
-                ),
-                8.wS,
-                Text(
-                  'READY FOR PICKUP',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            child: isActionLoading
+                ? Center(
+                    child: SizedBox(
+                      width: 20.r,
+                      height: 20.r,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2.2,
                         color: AppColor.pureWhite,
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
                       ),
-                ),
-              ],
-            ),
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.check_circle_outline_rounded,
+                        size: 16.r,
+                        color: AppColor.pureWhite,
+                      ),
+                      8.wS,
+                      Text(
+                        'READY FOR PICKUP',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              color: AppColor.pureWhite,
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                            ),
+                      ),
+                    ],
+                  ),
           ),
         ),
       );
@@ -395,6 +427,16 @@ class OngoingOrderCardWidget extends StatelessWidget {
 
     // 4. All other statuses -> do not show any button
     return const SizedBox.shrink();
+  }
+
+  String _formatStatus(String? status) {
+    if (status == null || status.trim().isEmpty) return '—';
+    return status
+        .replaceAll('_', ' ')
+        .split(' ')
+        .where((s) => s.isNotEmpty)
+        .map((w) => w[0].toUpperCase() + w.substring(1).toLowerCase())
+        .join(' ');
   }
 
   Widget _buildStatusChip(BuildContext context, String status) {
@@ -412,10 +454,14 @@ class OngoingOrderCardWidget extends StatelessWidget {
         break;
       case 'ACCEPTED':
       case 'CONFIRMED':
-      case 'DEL_ACCEPTED':
         bg = AppColor.statusConfirmedBg;
         fg = AppColor.statusConfirmed;
         label = 'Accepted';
+        break;
+      case 'DEL_ACCEPTED':
+        bg = AppColor.statusConfirmedBg;
+        fg = AppColor.statusConfirmed;
+        label = 'Del Accepted';
         break;
       case 'PREPARING':
       case 'COOKING':
@@ -427,14 +473,14 @@ class OngoingOrderCardWidget extends StatelessWidget {
       case 'READY_FOR_PICKUP':
         bg = AppColor.statusReadyBg;
         fg = AppColor.statusReady;
-        label = 'Ready';
+        label = 'Ready For Pickup';
         break;
       case 'OUT_FOR_DELIVERY':
       case 'ON_THE_WAY':
       case 'DISPATCHED':
         bg = AppColor.statusDispatchedBg;
         fg = AppColor.statusDispatched;
-        label = 'Dispatched';
+        label = 'Out For Delivery';
         break;
       case 'DELIVERED':
       case 'COMPLETED':
@@ -455,9 +501,7 @@ class OngoingOrderCardWidget extends StatelessWidget {
       default:
         bg = AppColor.whiteShade;
         fg = AppColor.slateGrey;
-        label = (status.isNotEmpty)
-            ? status[0].toUpperCase() + status.substring(1).toLowerCase()
-            : '—';
+        label = _formatStatus(status);
     }
 
     return Container(

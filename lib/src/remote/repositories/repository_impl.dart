@@ -28,6 +28,8 @@ abstract class Repository {
 
   Future<Either<Failure, OrderDetailsResponse>> order_details(OrderDetailsParams params);
 
+  Future<Either<Failure, OrderStatusUpdateResponse>> order_update_status(OrderUpdateStatusParams params);
+
   /// Dashboard / Serviceability
   Future<Either<Failure, ServiceabilityResponse>> serviceability_update(ServiceabilityUpdateParams params);
 
@@ -294,6 +296,43 @@ class AuthRepositoryImpl implements Repository {
       notConnected: () async {
         try {
           return Left(InternetFailure(mapFailureToMessage(InternetFailure(""))));
+        } on CacheException {
+          return Left(CacheFailure(mapFailureToMessage(CacheFailure(""))));
+        }
+      },
+    );
+  }
+
+  @override
+  Future<Either<Failure, OrderStatusUpdateResponse>> order_update_status(
+      OrderUpdateStatusParams params) {
+    return _networkInfo.check<OrderStatusUpdateResponse>(
+      connected: () async {
+        try {
+          String token = await SessionManager.getAuthToken() ?? "";
+
+          final respData =
+              await _remoteDataSource.OrderUpdateStatus(token, params);
+
+          if (respData.status != 200) {
+            return Left(
+                CredentialFailure(respData.message ?? "Something went wrong"));
+          }
+
+          return Right(respData);
+        } on ServerException {
+          return Left(ServerFailure(mapFailureToMessage(ServerFailure(""))));
+        } catch (e) {
+          if (e is ApiException) {
+            return Left(ApiFailure(e.message));
+          }
+          return Left(ServerFailure(mapFailureToMessage(ServerFailure(""))));
+        }
+      },
+      notConnected: () async {
+        try {
+          return Left(
+              InternetFailure(mapFailureToMessage(InternetFailure(""))));
         } on CacheException {
           return Left(CacheFailure(mapFailureToMessage(CacheFailure(""))));
         }
