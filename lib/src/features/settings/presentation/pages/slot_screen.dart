@@ -42,6 +42,7 @@ class _SlotScreenState extends State<SlotScreen> {
         ),
         BlocProvider(create: (_) => getIt<SlotCreateBloc>()),
         BlocProvider(create: (_) => getIt<SlotUpdateBloc>()),
+        BlocProvider(create: (_) => getIt<SlotDeleteBloc>()),
       ],
       child: Builder(
         builder: (blocContext) {
@@ -153,8 +154,11 @@ class _SlotScreenState extends State<SlotScreen> {
                                       DeleteSlotConfirmationDialog.show(
                                         blocContext,
                                         slot: slotItem,
-                                        onConfirmDelete: () {
-                                          // Hook for slot deletion API
+                                        onSlotDeleted: () {
+                                          blocContext
+                                              .read<SlotsListBloc>()
+                                              .add(const GetSlotsListEvent(
+                                                  page: 1, limit: 10));
                                         },
                                       );
                                     },

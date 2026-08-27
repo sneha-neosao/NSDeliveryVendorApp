@@ -28,6 +28,8 @@ sealed class RemoteDataSource {
   Future<SlotCreateResponse> SlotCreate(String token, SlotCreateParams params);
 
   Future<SlotUpdateResponse> SlotUpdate(String token, SlotUpdateParams params);
+
+  Future<SlotDeleteResponse> SlotDelete(String token, SlotDeleteParams params);
 }
 
 class RemoteDataSourceImpl implements RemoteDataSource {
@@ -350,6 +352,38 @@ class RemoteDataSourceImpl implements RemoteDataSource {
       );
 
       final respData = SlotUpdateResponse.fromJson(response);
+      return respData;
+    } on EmptyException {
+      throw AuthException();
+    } catch (e) {
+      logger.e(e);
+      if (e.toString() == noElement) {
+        throw AuthException();
+      }
+      if (e is ApiException) {
+        rethrow;
+      }
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<SlotDeleteResponse> SlotDelete(
+      String token, SlotDeleteParams params) async {
+    try {
+      final url = '${ApiUrl.slotDelete}?uu_id=${Uri.encodeComponent(params.uuId)}';
+
+      final response = await _helper.execute(
+        method: Method.delete,
+        url: url,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      final respData = SlotDeleteResponse.fromJson(response);
       return respData;
     } on EmptyException {
       throw AuthException();
