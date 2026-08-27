@@ -20,6 +20,7 @@ class AppFont {
     double? height,
     double? letterSpacing,
     TextDecoration? decoration,
+    FontStyle? fontStyle,
   }) {
     return TextStyle(
       fontFamily: _fontFamily,
@@ -29,6 +30,7 @@ class AppFont {
       height: height,
       letterSpacing: letterSpacing,
       decoration: decoration,
+      fontStyle: fontStyle,
     );
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_font.dart';
@@ -67,7 +68,20 @@ class TopProductsWidget extends StatelessWidget {
                   ),
                 ),
               ),
-              if (topProducts.isNotEmpty)
+              if (isLoading)
+                Shimmer.fromColors(
+                  baseColor: AppColor.border.withValues(alpha: 0.35),
+                  highlightColor: AppColor.pureWhite,
+                  child: Container(
+                    width: 52.w,
+                    height: 20.h,
+                    decoration: BoxDecoration(
+                      color: AppColor.pureWhite,
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
+                  ),
+                )
+              else if (topProducts.isNotEmpty)
                 Container(
                   padding:
                       EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
@@ -90,18 +104,80 @@ class TopProductsWidget extends StatelessWidget {
 
           // ── Content ─────────────────────────────────────────────
           if (isLoading)
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 24.h),
-              child: const Center(
-                child: SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.2,
-                    color: AppColor.primary,
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              itemCount: 3,
+              separatorBuilder: (context, index) => 12.hS,
+              itemBuilder: (context, index) {
+                return Shimmer.fromColors(
+                  baseColor: AppColor.border.withValues(alpha: 0.35),
+                  highlightColor: AppColor.pureWhite,
+                  child: Container(
+                    padding: EdgeInsets.all(12.r),
+                    decoration: BoxDecoration(
+                      color: AppColor.whiteShade,
+                      borderRadius: BorderRadius.circular(16.r),
+                      border: Border.all(
+                        color: AppColor.border.withValues(alpha: 0.45),
+                        width: 1.r,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        // Rank Badge placeholder
+                        Container(
+                          width: 26.r,
+                          height: 26.r,
+                          decoration: BoxDecoration(
+                            color: AppColor.pureWhite,
+                            borderRadius: BorderRadius.circular(4.r),
+                          ),
+                        ),
+                        10.wS,
+
+                        // Image placeholder
+                        Container(
+                          width: 48.r,
+                          height: 48.r,
+                          decoration: BoxDecoration(
+                            color: AppColor.pureWhite,
+                            borderRadius: BorderRadius.circular(6.r),
+                          ),
+                        ),
+                        12.wS,
+
+                        // Text placeholder lines
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 130.w,
+                                height: 14.h,
+                                decoration: BoxDecoration(
+                                  color: AppColor.pureWhite,
+                                  borderRadius: BorderRadius.circular(4.r),
+                                ),
+                              ),
+                              6.hS,
+                              Container(
+                                width: 60.w,
+                                height: 12.h,
+                                decoration: BoxDecoration(
+                                  color: AppColor.pureWhite,
+                                  borderRadius: BorderRadius.circular(4.r),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
             )
           else if (topProducts.isEmpty)
             Padding(

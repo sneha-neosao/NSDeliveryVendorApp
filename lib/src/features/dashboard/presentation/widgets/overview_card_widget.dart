@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_font.dart';
@@ -236,12 +237,16 @@ class OverviewCardWidget extends StatelessWidget {
 
                   // Value / Loader
                   if (isLoading)
-                    SizedBox(
-                      width: 24.r,
-                      height: 24.r,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2.2,
-                        color: AppColor.primary,
+                    Shimmer.fromColors(
+                      baseColor: AppColor.border.withValues(alpha: 0.35),
+                      highlightColor: AppColor.pureWhite,
+                      child: Container(
+                        width: 44.w,
+                        height: 28.h,
+                        decoration: BoxDecoration(
+                          color: AppColor.pureWhite,
+                          borderRadius: BorderRadius.circular(4.r),
+                        ),
                       ),
                     )
                   else
@@ -305,12 +310,17 @@ class OverviewCardWidget extends StatelessWidget {
                               ),
                             ),
                             if (isLoading)
-                              SizedBox(
-                                width: 16.r,
-                                height: 16.r,
-                                child: const CircularProgressIndicator(
-                                  strokeWidth: 2.0,
-                                  color: AppColor.primary,
+                              Shimmer.fromColors(
+                                baseColor:
+                                    AppColor.border.withValues(alpha: 0.35),
+                                highlightColor: AppColor.pureWhite,
+                                child: Container(
+                                  width: 32.w,
+                                  height: 20.h,
+                                  decoration: BoxDecoration(
+                                    color: AppColor.pureWhite,
+                                    borderRadius: BorderRadius.circular(4.r),
+                                  ),
                                 ),
                               )
                             else
@@ -381,12 +391,17 @@ class OverviewCardWidget extends StatelessWidget {
                             ),
                           ),
                           if (isLoading)
-                            SizedBox(
-                              width: 16.r,
-                              height: 16.r,
-                              child: const CircularProgressIndicator(
-                                strokeWidth: 2.0,
-                                color: AppColor.primary,
+                            Shimmer.fromColors(
+                              baseColor:
+                                  AppColor.border.withValues(alpha: 0.35),
+                              highlightColor: AppColor.pureWhite,
+                              child: Container(
+                                width: 44.w,
+                                height: 20.h,
+                                decoration: BoxDecoration(
+                                  color: AppColor.pureWhite,
+                                  borderRadius: BorderRadius.circular(4.r),
+                                ),
                               ),
                             )
                           else

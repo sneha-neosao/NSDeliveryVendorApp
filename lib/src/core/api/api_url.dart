@@ -38,5 +38,7 @@ class ApiUrl {
   static const dashboardSummaryStats = "/dashboard/summary-stats";
 
   static const dashboardPerformanceMetrics = "/dashboard/performance-metrics";
+
+  static const offersList = "/offers/list";
 }
 
