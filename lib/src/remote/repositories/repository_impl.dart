@@ -31,6 +31,8 @@ abstract class Repository {
   /// Dashboard / Serviceability
   Future<Either<Failure, ServiceabilityResponse>> serviceability_update(ServiceabilityUpdateParams params);
 
+  Future<Either<Failure, SummaryStatsResponse>> dashboard_summary_stats(NoParams params);
+
   /// Settings / Time Slots
   Future<Either<Failure, SlotsListResponse>> slots_list(SlotsListParams params);
 
@@ -486,6 +488,43 @@ class AuthRepositoryImpl implements Repository {
           String token = await SessionManager.getAuthToken() ?? "";
 
           final respData = await _remoteDataSource.ProfileList(token);
+
+          if (respData.status != 200) {
+            return Left(
+                CredentialFailure(respData.message ?? "Something went wrong"));
+          }
+
+          return Right(respData);
+        } on ServerException {
+          return Left(ServerFailure(mapFailureToMessage(ServerFailure(""))));
+        } catch (e) {
+          if (e is ApiException) {
+            return Left(ApiFailure(e.message));
+          }
+          return Left(ServerFailure(mapFailureToMessage(ServerFailure(""))));
+        }
+      },
+      notConnected: () async {
+        try {
+          return Left(
+              InternetFailure(mapFailureToMessage(InternetFailure(""))));
+        } on CacheException {
+          return Left(CacheFailure(mapFailureToMessage(CacheFailure(""))));
+        }
+      },
+    );
+  }
+
+  @override
+  Future<Either<Failure, SummaryStatsResponse>> dashboard_summary_stats(
+      NoParams params) {
+    return _networkInfo.check<SummaryStatsResponse>(
+      connected: () async {
+        try {
+          String token = await SessionManager.getAuthToken() ?? "";
+
+          final respData =
+              await _remoteDataSource.DashboardSummaryStats(token);
 
           if (respData.status != 200) {
             return Left(

@@ -34,6 +34,8 @@ sealed class RemoteDataSource {
   Future<SlotDeleteResponse> SlotDelete(String token, SlotDeleteParams params);
 
   Future<ProfileResponse> ProfileList(String token);
+
+  Future<SummaryStatsResponse> DashboardSummaryStats(String token);
 }
 
 class RemoteDataSourceImpl implements RemoteDataSource {
@@ -446,6 +448,35 @@ class RemoteDataSourceImpl implements RemoteDataSource {
       );
 
       final respData = ProfileResponse.fromJson(response);
+      return respData;
+    } on EmptyException {
+      throw AuthException();
+    } catch (e) {
+      logger.e(e);
+      if (e.toString() == noElement) {
+        throw AuthException();
+      }
+      if (e is ApiException) {
+        rethrow;
+      }
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<SummaryStatsResponse> DashboardSummaryStats(String token) async {
+    try {
+      final response = await _helper.execute(
+        method: Method.get,
+        url: ApiUrl.dashboardSummaryStats,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      final respData = SummaryStatsResponse.fromJson(response);
       return respData;
     } on EmptyException {
       throw AuthException();

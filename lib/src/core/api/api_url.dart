@@ -1,8 +1,8 @@
 class ApiUrl {
   const ApiUrl._();
 
-  // static const baseUrl = "http://172.20.10.2:8001/api/v1/delivery_boy"; // TEST
-  static const baseUrl = "https://web.neosao.co.in/api/v1/restaurant"; // LIVE
+  static const baseUrl = "http://192.168.1.17:8001/api/v1/delivery_boy"; // TEST
+  // static const baseUrl = "https://web.neosao.co.in/api/v1/restaurant"; // LIVE
 
   // static const socketUrl = "http://172.20.10.2:8001"; // Socket
   static const socketUrl = "https://web.neosao.co.in"; // Socket
@@ -32,5 +32,7 @@ class ApiUrl {
   static const slotDelete = "/slots/delete";
 
   static const profileList = "/profile/list";
+
+  static const dashboardSummaryStats = "/dashboard/summary-stats";
 }
 
