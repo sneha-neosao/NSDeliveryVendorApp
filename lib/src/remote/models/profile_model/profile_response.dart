@@ -43,6 +43,8 @@ class ProfileData {
   final String? email;
   final num? avgRating;
   final int? totalReviews;
+  final bool? autoIsServiceable;
+  final bool? adminIsServiceable;
 
   ProfileData({
     this.id,
@@ -56,6 +58,8 @@ class ProfileData {
     this.email,
     this.avgRating,
     this.totalReviews,
+    this.autoIsServiceable,
+    this.adminIsServiceable,
   });
 
   factory ProfileData.fromRawJson(String str) =>
@@ -75,6 +79,8 @@ class ProfileData {
         email: json['email']?.toString(),
         avgRating: json['avg_rating'] as num?,
         totalReviews: (json['total_reviews'] as num?)?.toInt(),
+        autoIsServiceable: json['auto_is_serviceable'] as bool?,
+        adminIsServiceable: json['admin_is_serviceable'] as bool?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -89,6 +95,8 @@ class ProfileData {
         'email': email,
         'avg_rating': avgRating,
         'total_reviews': totalReviews,
+        'auto_is_serviceable': autoIsServiceable,
+        'admin_is_serviceable': adminIsServiceable,
       };
 
   String get fullName {

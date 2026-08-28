@@ -1,12 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/theme/app_color.dart';
 import 'settings_menu_item_widget.dart';
 
 class SettingsMenuListWidget extends StatelessWidget {
   final bool isServiceOn;
+  final bool isProfileLoading;
   final bool isServiceabilityLoading;
   final ValueChanged<bool>? onServiceabilityChanged;
   final VoidCallback? onChangePasswordTap;
@@ -17,6 +19,7 @@ class SettingsMenuListWidget extends StatelessWidget {
   const SettingsMenuListWidget({
     super.key,
     this.isServiceOn = true,
+    this.isProfileLoading = false,
     this.isServiceabilityLoading = false,
     this.onServiceabilityChanged,
     this.onChangePasswordTap,
@@ -29,49 +32,53 @@ class SettingsMenuListWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // 1. Serviceability with Toggle Switch & Loading Spinner
+        // 1. Serviceability with Toggle Switch & Shimmer/Loading Spinner
         SettingsMenuItemWidget(
           icon: Icons.room_service_rounded,
           title: 'Serviceability',
           subtitle: 'Turn your service ON/OFF',
-          onTap: isServiceabilityLoading
+          onTap: (isProfileLoading || isServiceabilityLoading)
               ? null
               : () => onServiceabilityChanged?.call(!isServiceOn),
-          trailing: isServiceabilityLoading
-              ? SizedBox(
-                  width: 44.w,
-                  height: 28.h,
-                  child: Center(
-                    child: SizedBox(
-                      width: 20.r,
-                      height: 20.r,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2.2,
-                        color: AppColor.primary,
-                      ),
+          trailing: isProfileLoading
+              ? Shimmer.fromColors(
+                  baseColor: AppColor.border.withValues(alpha: 0.35),
+                  highlightColor: AppColor.pureWhite,
+                  child: Container(
+                    width: 48.w,
+                    height: 28.h,
+                    decoration: BoxDecoration(
+                      color: AppColor.pureWhite,
+                      borderRadius: BorderRadius.circular(14.r),
                     ),
                   ),
                 )
-              : CupertinoSwitch(
-                  value: isServiceOn,
-                  activeTrackColor: AppColor.primary,
-                  inactiveTrackColor: AppColor.gray.withValues(alpha: 0.35),
-                  onChanged: isServiceabilityLoading
-                      ? null
-                      : onServiceabilityChanged,
-                ),
+              : isServiceabilityLoading
+                  ? SizedBox(
+                      width: 44.w,
+                      height: 28.h,
+                      child: Center(
+                        child: SizedBox(
+                          width: 20.r,
+                          height: 20.r,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2.2,
+                            color: AppColor.primary,
+                          ),
+                        ),
+                      ),
+                    )
+                  : CupertinoSwitch(
+                      value: isServiceOn,
+                      activeTrackColor: AppColor.primary,
+                      inactiveTrackColor:
+                          AppColor.gray.withValues(alpha: 0.35),
+                      onChanged: isServiceabilityLoading
+                          ? null
+                          : onServiceabilityChanged,
+                    ),
         ),
         14.hS,
-
-        // // 2. Change Password with Lock Icon & Arrow
-        // SettingsMenuItemWidget(
-        //   icon: Icons.lock_outline_rounded,
-        //   title: 'Change Password',
-        //   subtitle: 'Update your account password',
-        //   showTrailing: true,
-        //   onTap: onChangePasswordTap,
-        // ),
-        // 14.hS,
 
         // 3. Time Slots with Clock Icon & Arrow
         SettingsMenuItemWidget(

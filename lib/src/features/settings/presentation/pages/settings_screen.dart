@@ -11,8 +11,9 @@ import '../../../../core/theme/app_color.dart';
 import '../../../../routes/app_route_path.dart';
 import '../../../dashboard/bloc/serviceability_bloc/serviceability_bloc.dart';
 import '../../../login/bloc/auth_login_bloc/auth_login_bloc.dart';
-import '../../bloc/delete_account_bloc/delete_account_bloc.dart';
 import '../../../widgets/snackbar_widget.dart';
+import '../../bloc/delete_account_bloc/delete_account_bloc.dart';
+import '../../bloc/profile_bloc/profile_bloc.dart';
 import '../widgets/delete_account_confirmation_dialog.dart';
 import '../widgets/logout_confirmation_dialog.dart';
 import '../widgets/profile_info_card_widget.dart';
@@ -27,9 +28,9 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  String _storeName = 'Aashu Snacks Corner';
-  String _email = 'aashukale15@gmail.com';
-  final String _phone = '+91 98765 43210';
+  String _storeName = 'Vendor';
+  String _email = '';
+  String _phone = '';
   bool _isServiceOn = true;
 
   @override
@@ -65,131 +66,178 @@ class _SettingsScreenState extends State<SettingsScreen> {
         BlocProvider(create: (_) => getIt<AuthLoginBloc>()),
         BlocProvider(create: (_) => getIt<ServiceabilityBloc>()),
         BlocProvider(create: (_) => getIt<DeleteAccountBloc>()),
+        BlocProvider(
+          create: (_) => getIt<ProfileBloc>()..add(FetchProfileEvent()),
+        ),
         BlocProvider(create: (_) => getIt<ThemeBloc>()),
         BlocProvider(create: (_) => getIt<TranslateBloc>()),
       ],
-      child: Scaffold(
-        backgroundColor: AppColor.white,
-        body: Stack(
-          children: [
-            // Top Orange Curved Background Banner
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              height: topPadding + 160.h,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppColor.primary,
-                      AppColor.darkOrange,
-                    ],
+      child: MultiBlocListener(
+        listeners: [
+          // Profile Details Listener: Update profile details & auto_is_serviceable toggle flag
+          BlocListener<ProfileBloc, ProfileState>(
+            listener: (context, state) {
+              if (state is ProfileSuccessState) {
+                final profile = state.data.data;
+                if (profile != null && mounted) {
+                  setState(() {
+                    if (profile.entityName != null &&
+                        profile.entityName!.trim().isNotEmpty) {
+                      _storeName = profile.entityName!;
+                    }
+                    if (profile.email != null &&
+                        profile.email!.trim().isNotEmpty) {
+                      _email = profile.email!;
+                    }
+                    if (profile.entityContact != null &&
+                        profile.entityContact!.trim().isNotEmpty) {
+                      _phone = profile.entityContact!;
+                    }
+                    // Serviceability toggle based on auto_is_serviceable flag
+                    if (profile.autoIsServiceable != null) {
+                      _isServiceOn = profile.autoIsServiceable!;
+                    }
+                  });
+                }
+              }
+            },
+          ),
+          // Serviceability Update Listener
+          BlocListener<ServiceabilityBloc, ServiceabilityState>(
+            listener: (context, state) {
+              if (state is ServiceabilityUpdateSuccessState) {
+                if (state.data.data?.adminIsServiceable != null) {
+                  setState(() {
+                    _isServiceOn = state.data.data!.adminIsServiceable!;
+                  });
+                }
+                appSnackBar(
+                  context,
+                  AppColor.green,
+                  state.data.message ?? 'Serviceability updated successfully',
+                );
+              } else if (state is ServiceabilityUpdateFailureState) {
+                appSnackBar(
+                  context,
+                  AppColor.bright_red,
+                  state.message,
+                );
+              }
+            },
+          ),
+        ],
+        child: Scaffold(
+          backgroundColor: AppColor.white,
+          body: Stack(
+            children: [
+              // Top Orange Curved Background Banner
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: topPadding + 160.h,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColor.primary,
+                        AppColor.darkOrange,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(28.r),
+                      bottomRight: Radius.circular(28.r),
+                    ),
                   ),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(28.r),
-                    bottomRight: Radius.circular(28.r),
-                  ),
-                ),
-                child: Stack(
-                  children: [
-                    Positioned(
-                      right: -30.r,
-                      top: -20.r,
-                      child: Container(
-                        width: 180.r,
-                        height: 180.r,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColor.pureWhite.withValues(alpha: 0.08),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        right: -30.r,
+                        top: -20.r,
+                        child: Container(
+                          width: 180.r,
+                          height: 180.r,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColor.pureWhite.withValues(alpha: 0.08),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-            // Safe Scrollable Content
-            Positioned.fill(
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.only(
-                  top: topPadding + 10.h,
-                  left: 20.w,
-                  right: 20.w,
-                  bottom: 16.h,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Top Bar Header with Back Button and Profile Title
-                    const SettingsHeaderWidget(),
-                    28.hS,
-                    // Floating White Profile Info Card Overlay
-                    ProfileInfoCardWidget(
-                      storeName: _storeName,
-                      email: _email,
-                      phoneNumber: _phone,
-                      onEditTap: () {},
-                    ),
-                    18.hS,
-                    // Settings Menu List Options with Serviceability BLoC
-                    BlocConsumer<ServiceabilityBloc, ServiceabilityState>(
-                      listener: (context, state) {
-                        if (state is ServiceabilityUpdateSuccessState) {
-                          if (state.data.data?.adminIsServiceable != null) {
-                            setState(() {
-                              _isServiceOn =
-                                  state.data.data!.adminIsServiceable!;
-                            });
-                          }
-                          appSnackBar(
-                            context,
-                            AppColor.green,
-                            state.data.message ??
-                                'Serviceability updated successfully',
-                          );
-                        } else if (state is ServiceabilityUpdateFailureState) {
-                          appSnackBar(
-                            context,
-                            AppColor.bright_red,
-                            state.message,
-                          );
-                        }
-                      },
-                      builder: (blocContext, state) {
-                        final isLoading =
-                            state is ServiceabilityUpdateLoadingState;
+              // Safe Scrollable Content
+              Positioned.fill(
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.only(
+                    top: topPadding + 10.h,
+                    left: 20.w,
+                    right: 20.w,
+                    bottom: 16.h,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Top Bar Header with Back Button and Profile Title
+                      const SettingsHeaderWidget(),
+                      28.hS,
+                      // Floating White Profile Info Card Overlay
+                      ProfileInfoCardWidget(
+                        storeName: _storeName,
+                        email: _email,
+                        phoneNumber: _phone,
+                        onEditTap: () {},
+                      ),
+                      18.hS,
+                      // Settings Menu List Options
+                      BlocBuilder<ProfileBloc, ProfileState>(
+                        builder: (context, profileState) {
+                          final isProfileLoading =
+                              profileState is ProfileLoadingState ||
+                                  profileState is ProfileInitialState;
 
-                        return SettingsMenuListWidget(
-                          isServiceOn: _isServiceOn,
-                          isServiceabilityLoading: isLoading,
-                          onServiceabilityChanged: (isOn) {
-                            blocContext.read<ServiceabilityBloc>().add(
-                                  UpdateServiceabilityEvent(
-                                    adminIsServiceable: isOn,
-                                  ),
-                                );
-                          },
-                          onChangePasswordTap: () =>
-                              context.push(AppRoute.changePassword.path),
-                          onTimeSlotsTap: () =>
-                              context.push(AppRoute.slots.path),
-                          onLogoutTap: () =>
-                              LogoutConfirmationDialog.show(blocContext),
-                          onDeleteAccountTap: () =>
-                              DeleteAccountConfirmationDialog.show(
-                                  blocContext),
-                        );
-                      },
-                    ),
-                  ],
+                          return BlocBuilder<ServiceabilityBloc,
+                              ServiceabilityState>(
+                            builder: (blocContext, serviceState) {
+                              final isUpdatingServiceability =
+                                  serviceState is ServiceabilityUpdateLoadingState;
+
+                              return SettingsMenuListWidget(
+                                isServiceOn: _isServiceOn,
+                                isProfileLoading: isProfileLoading,
+                                isServiceabilityLoading:
+                                    isUpdatingServiceability,
+                                onServiceabilityChanged: (isOn) {
+                                  blocContext.read<ServiceabilityBloc>().add(
+                                        UpdateServiceabilityEvent(
+                                          adminIsServiceable: isOn,
+                                        ),
+                                      );
+                                },
+                                onChangePasswordTap: () =>
+                                    context.push(AppRoute.changePassword.path),
+                                onTimeSlotsTap: () =>
+                                    context.push(AppRoute.slots.path),
+                                onLogoutTap: () =>
+                                    LogoutConfirmationDialog.show(blocContext),
+                                onDeleteAccountTap: () =>
+                                    DeleteAccountConfirmationDialog.show(
+                                        blocContext),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
