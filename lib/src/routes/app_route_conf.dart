@@ -57,6 +57,13 @@ class AppRouteConf {
           return _fadePage(const ForgotPasswordScreen());
         },
       ),
+      GoRoute(
+        path: AppRoute.editProfile.path,
+        name: AppRoute.editProfile.name,
+        pageBuilder: (context, state) {
+          return _fadePage(const EditProfileScreen());
+        },
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainScreen(navigationShell: navigationShell);

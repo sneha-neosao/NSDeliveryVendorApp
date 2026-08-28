@@ -101,7 +101,11 @@ class ProfileData {
 
   String get fullName {
     final parts = [firstName, middleName, lastName]
-        .where((e) => e != null && e.trim().isNotEmpty)
+        .where((e) =>
+            e != null &&
+            e.trim().isNotEmpty &&
+            e.trim().toLowerCase() != 'string' &&
+            e.trim().toLowerCase() != 'null')
         .join(' ');
     return parts.isNotEmpty ? parts : (entityName ?? 'Vendor');
   }

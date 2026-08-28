@@ -9,7 +9,8 @@ enum AppRoute {
   orderDetails(path: "/order_details"),
   slots(path: "/slots"),
   changePassword(path: "/change_password"),
-  forgotPassword(path: "/forgot_password");
+  forgotPassword(path: "/forgot_password"),
+  editProfile(path: "/edit_profile");
 
   final String path;
 

@@ -39,20 +39,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _loadVendorSession();
   }
 
+  String? _cleanString(String? val) {
+    if (val == null) return null;
+    final trimmed = val.trim();
+    if (trimmed.isEmpty ||
+        trimmed.toLowerCase() == 'string' ||
+        trimmed.toLowerCase() == 'null') {
+      return null;
+    }
+    return trimmed;
+  }
+
   Future<void> _loadVendorSession() async {
     final session = await SessionManager.getUserSession();
     final restaurant = session?.data?.restaurant;
 
     if (restaurant != null && mounted) {
       setState(() {
-        if (restaurant.entityName != null &&
-            restaurant.entityName!.trim().isNotEmpty) {
-          _storeName = restaurant.entityName!;
-        }
-        if (restaurant.email != null &&
-            restaurant.email!.trim().isNotEmpty) {
-          _email = restaurant.email!;
-        }
+        final entity = _cleanString(restaurant.entityName);
+        final mail = _cleanString(restaurant.email);
+        if (entity != null) _storeName = entity;
+        if (mail != null) _email = mail;
       });
     }
   }
@@ -81,18 +88,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 final profile = state.data.data;
                 if (profile != null && mounted) {
                   setState(() {
-                    if (profile.entityName != null &&
-                        profile.entityName!.trim().isNotEmpty) {
-                      _storeName = profile.entityName!;
-                    }
-                    if (profile.email != null &&
-                        profile.email!.trim().isNotEmpty) {
-                      _email = profile.email!;
-                    }
-                    if (profile.entityContact != null &&
-                        profile.entityContact!.trim().isNotEmpty) {
-                      _phone = profile.entityContact!;
-                    }
+                    final entity = _cleanString(profile.entityName);
+                    final mail = _cleanString(profile.email);
+                    final contact = _cleanString(profile.entityContact);
+
+                    if (entity != null) _storeName = entity;
+                    if (mail != null) _email = mail;
+                    if (contact != null) _phone = contact;
+
                     // Serviceability toggle based on auto_is_serviceable flag
                     if (profile.autoIsServiceable != null) {
                       _isServiceOn = profile.autoIsServiceable!;
@@ -190,7 +193,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         storeName: _storeName,
                         email: _email,
                         phoneNumber: _phone,
-                        onEditTap: () {},
+                        onEditTap: () =>
+                            context.push(AppRoute.editProfile.path),
                       ),
                       18.hS,
                       // Settings Menu List Options

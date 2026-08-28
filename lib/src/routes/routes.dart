@@ -10,3 +10,4 @@ export '../features/orders/presentation/pages/order_details_screen.dart';
 export '../features/settings/presentation/pages/slot_screen.dart';
 export '../features/settings/presentation/pages/change_password_screen.dart';
 export '../features/login/presentation/pages/forgot_password_screen.dart';
+export '../features/settings/presentation/pages/edit_profile_screen.dart';
