@@ -5,14 +5,16 @@ import '../../../../configs/injector/injector_conf.dart';
 import '../../../../core/blocs/theme/theme_bloc.dart';
 import '../../../../core/blocs/translate/translate_bloc.dart';
 import '../../../../core/theme/app_color.dart';
+import '../../../widgets/snackbar_widget.dart';
 import '../../bloc/item_list_bloc/items_list_bloc.dart';
+import '../../bloc/item_status_toggle_bloc/item_status_toggle_bloc.dart';
 import '../widgets/menu_empty_state_widget.dart';
 import '../widgets/menu_header_widget.dart';
 import '../widgets/menu_items_list_view_widget.dart';
 import '../widgets/menu_search_filter_widget.dart';
 import '../widgets/menu_shimmer_widget.dart';
 
-/// Menu Screen displaying restaurant items list with search query, active/inactive filters, shimmer loading, and full state handling.
+/// Menu Screen displaying restaurant items list with search query, active/inactive filters, shimmer loading, and status toggle.
 class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key});
 
@@ -30,6 +32,9 @@ class _MenuScreenState extends State<MenuScreen> {
         BlocProvider(
           create: (_) => getIt<ItemsListBloc>()
             ..add(const GetItemsListEvent(page: 1, limit: 10)),
+        ),
+        BlocProvider(
+          create: (_) => getIt<ItemStatusToggleBloc>(),
         ),
       ],
       child: const Scaffold(
@@ -108,74 +113,116 @@ class _MenuContentWidgetState extends State<_MenuContentWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // ── Search Field (Corners Round 25.r) & Active/Inactive Chips ──
-        MenuSearchFilterWidget(
-          searchController: _searchController,
-          selectedStatus: _selectedStatus,
-          onSearchChanged: _onSearchChanged,
-          onClearSearch: _onClearSearch,
-          onStatusChanged: _onStatusChanged,
-        ),
-
-        // ── Items List / Shimmer / Empty State ───────────────────────
-        Expanded(
-          child: BlocBuilder<ItemsListBloc, ItemsListState>(
-            builder: (context, state) {
-              if (state is ItemsListLoadingState ||
-                  state is ItemsListInitialState) {
-                return const SingleChildScrollView(
-                  physics: NeverScrollableScrollPhysics(),
-                  child: MenuShimmerWidget(),
-                );
-              }
-
-              if (state is ItemsListFailureState) {
-                return MenuEmptyStateWidget(
-                  title: 'Failed to load menu',
-                  description: state.message,
-                  onRefresh: () {
-                    _fetchItems();
-                  },
-                );
-              }
-
-              if (state is ItemsListSuccessState) {
-                final items = state.items;
-
-                if (items.isEmpty) {
-                  return MenuEmptyStateWidget(
-                    title: 'No Menu Items Found',
-                    description: (_searchController.text.isNotEmpty ||
-                            _selectedStatus != null)
-                        ? 'No items match your search query or filter.'
-                        : 'You have not added any menu items to your restaurant yet.',
-                    onRefresh: () {
-                      _fetchItems();
-                    },
-                  );
-                }
-
-                return MenuItemsListViewWidget(
-                  items: items,
-                  pagination: state.data.pagination,
-                  isLoadingMore: state.isLoadingMore,
-                  hasReachedMax: state.hasReachedMax,
-                  onLoadMore: () {
-                    context.read<ItemsListBloc>().add(LoadMoreItemsListEvent());
-                  },
-                  onRefresh: () async {
-                    _fetchItems();
-                  },
-                );
-              }
-
-              return const SizedBox.shrink();
-            },
+    return BlocListener<ItemStatusToggleBloc, ItemStatusToggleState>(
+      listener: (context, toggleState) {
+        if (toggleState is ItemStatusToggleSuccessState) {
+          appSnackBar(
+            context,
+            AppColor.green,
+            toggleState.data.message?.isNotEmpty == true
+                ? toggleState.data.message!
+                : 'Menu item status updated successfully',
+          );
+          _fetchItems();
+        } else if (toggleState is ItemStatusToggleFailureState) {
+          appSnackBar(
+            context,
+            AppColor.bright_red,
+            toggleState.message,
+          );
+        }
+      },
+      child: Column(
+        children: [
+          // ── Search Field (Corners Round 25.r) & Active/Inactive Chips ──
+          MenuSearchFilterWidget(
+            searchController: _searchController,
+            selectedStatus: _selectedStatus,
+            onSearchChanged: _onSearchChanged,
+            onClearSearch: _onClearSearch,
+            onStatusChanged: _onStatusChanged,
           ),
-        ),
-      ],
+
+          // ── Items List / Shimmer / Empty State ───────────────────────
+          Expanded(
+            child: BlocBuilder<ItemStatusToggleBloc, ItemStatusToggleState>(
+              builder: (context, toggleState) {
+                final loadingItemId = toggleState is ItemStatusToggleLoadingState
+                    ? toggleState.uuId
+                    : null;
+
+                return BlocBuilder<ItemsListBloc, ItemsListState>(
+                  builder: (context, state) {
+                    if (state is ItemsListLoadingState ||
+                        state is ItemsListInitialState) {
+                      return const SingleChildScrollView(
+                        physics: NeverScrollableScrollPhysics(),
+                        child: MenuShimmerWidget(),
+                      );
+                    }
+
+                    if (state is ItemsListFailureState) {
+                      return MenuEmptyStateWidget(
+                        title: 'Failed to load menu',
+                        description: state.message,
+                        onRefresh: () {
+                          _fetchItems();
+                        },
+                      );
+                    }
+
+                    if (state is ItemsListSuccessState) {
+                      final items = state.items;
+
+                      if (items.isEmpty) {
+                        return MenuEmptyStateWidget(
+                          title: 'No Menu Items Found',
+                          description: (_searchController.text.isNotEmpty ||
+                                  _selectedStatus != null)
+                              ? 'No items match your search query or filter.'
+                              : 'You have not added any menu items to your restaurant yet.',
+                          onRefresh: () {
+                            _fetchItems();
+                          },
+                        );
+                      }
+
+                      return MenuItemsListViewWidget(
+                        items: items,
+                        pagination: state.data.pagination,
+                        isLoadingMore: state.isLoadingMore,
+                        hasReachedMax: state.hasReachedMax,
+                        loadingItemId: loadingItemId,
+                        onItemTap: (item) {
+                          if (item.uuId != null && item.uuId!.isNotEmpty) {
+                            final nextStatus = !(item.itemStatus ?? false);
+                            context.read<ItemStatusToggleBloc>().add(
+                                  ToggleItemStatusEvent(
+                                    uuId: item.uuId!,
+                                    itemStatus: nextStatus,
+                                  ),
+                                );
+                          }
+                        },
+                        onLoadMore: () {
+                          context
+                              .read<ItemsListBloc>()
+                              .add(LoadMoreItemsListEvent());
+                        },
+                        onRefresh: () async {
+                          _fetchItems();
+                        },
+                      );
+                    }
+
+                    return const SizedBox.shrink();
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

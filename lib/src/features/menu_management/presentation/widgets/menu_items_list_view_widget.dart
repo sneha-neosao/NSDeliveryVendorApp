@@ -11,6 +11,7 @@ class MenuItemsListViewWidget extends StatefulWidget {
   final Pagination? pagination;
   final bool isLoadingMore;
   final bool hasReachedMax;
+  final String? loadingItemId;
   final Future<void> Function()? onRefresh;
   final VoidCallback? onLoadMore;
   final ValueChanged<RestaurantItem>? onItemTap;
@@ -21,6 +22,7 @@ class MenuItemsListViewWidget extends StatefulWidget {
     this.pagination,
     this.isLoadingMore = false,
     this.hasReachedMax = false,
+    this.loadingItemId,
     this.onRefresh,
     this.onLoadMore,
     this.onItemTap,
@@ -89,8 +91,12 @@ class _MenuItemsListViewWidgetState extends State<MenuItemsListViewWidget> {
           }
 
           final item = widget.items[index];
+          final isItemLoading =
+              widget.loadingItemId != null && widget.loadingItemId == item.uuId;
+
           return MenuItemCardWidget(
             item: item,
+            isLoading: isItemLoading,
             onTap: () => widget.onItemTap?.call(item),
           );
         },
