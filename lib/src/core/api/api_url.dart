@@ -15,6 +15,8 @@ class ApiUrl {
 
   static const itemsList = "/items/list";
 
+  static const itemToggleStatus = "/items/toggle-status";
+
   static const orderHistory = "/orders/history";
 
   static const ordersList = "/orders/list";

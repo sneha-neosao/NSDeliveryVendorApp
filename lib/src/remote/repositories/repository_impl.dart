@@ -27,6 +27,8 @@ abstract class Repository {
   /// Items
   Future<Either<Failure, ItemsListResponse>> items_list(ItemsListParams params);
 
+  Future<Either<Failure, ItemStatusToggleResponse>> item_status_toggle(ItemStatusToggleParams params);
+
   /// Orders
   Future<Either<Failure, OrderHistoryResponse>> order_history(OrderHistoryParams params);
 
@@ -754,6 +756,43 @@ class AuthRepositoryImpl implements Repository {
       connected: () async {
         try {
           final respData = await _remoteDataSource.AppVersion();
+
+          if (respData.status != 200) {
+            return Left(
+                CredentialFailure(respData.message ?? "Something went wrong"));
+          }
+
+          return Right(respData);
+        } on ServerException {
+          return Left(ServerFailure(mapFailureToMessage(ServerFailure(""))));
+        } catch (e) {
+          if (e is ApiException) {
+            return Left(ApiFailure(e.message));
+          }
+          return Left(ServerFailure(mapFailureToMessage(ServerFailure(""))));
+        }
+      },
+      notConnected: () async {
+        try {
+          return Left(
+              InternetFailure(mapFailureToMessage(InternetFailure(""))));
+        } on CacheException {
+          return Left(CacheFailure(mapFailureToMessage(CacheFailure(""))));
+        }
+      },
+    );
+  }
+
+  @override
+  Future<Either<Failure, ItemStatusToggleResponse>> item_status_toggle(
+      ItemStatusToggleParams params) {
+    return _networkInfo.check<ItemStatusToggleResponse>(
+      connected: () async {
+        try {
+          String token = await SessionManager.getAuthToken() ?? "";
+
+          final respData =
+              await _remoteDataSource.ItemStatusToggle(token, params);
 
           if (respData.status != 200) {
             return Left(

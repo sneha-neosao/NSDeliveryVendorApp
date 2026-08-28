@@ -53,6 +53,10 @@ void configureDepedencies() {
 
   getIt.registerFactory(() => ItemsListBloc(getIt<ItemsListUseCase>()));
 
+  getIt.registerLazySingleton(() => ItemStatusToggleUseCase(getIt<AuthRepositoryImpl>()));
+
+  getIt.registerFactory(() => ItemStatusToggleBloc(getIt<ItemStatusToggleUseCase>()));
+
   /// Orders
   getIt.registerLazySingleton(() => OrderHistoryUseCase(getIt<AuthRepositoryImpl>()));
 

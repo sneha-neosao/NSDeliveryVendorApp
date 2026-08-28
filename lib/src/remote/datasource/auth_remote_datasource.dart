@@ -22,6 +22,8 @@ sealed class RemoteDataSource {
   /// Items
   Future<ItemsListResponse> itemsList(String token, ItemsListParams params);
 
+  Future<ItemStatusToggleResponse> ItemStatusToggle(String token, ItemStatusToggleParams params);
+
   /// Orders
   Future<OrderHistoryResponse> orderHistory(String token, OrderHistoryParams params);
 
@@ -669,6 +671,39 @@ class RemoteDataSourceImpl implements RemoteDataSource {
       );
 
       final respData = AppVersionResponse.fromJson(response);
+      return respData;
+    } on EmptyException {
+      throw AuthException();
+    } catch (e) {
+      logger.e(e);
+      if (e.toString() == noElement) {
+        throw AuthException();
+      }
+      if (e is ApiException) {
+        rethrow;
+      }
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<ItemStatusToggleResponse> ItemStatusToggle(
+      String token, ItemStatusToggleParams params) async {
+    try {
+      final queryString =
+          'uu_id=${params.uuId}&item_status=${params.itemStatus}';
+
+      final response = await _helper.execute(
+        method: Method.patch,
+        url: '${ApiUrl.itemToggleStatus}?$queryString',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      final respData = ItemStatusToggleResponse.fromJson(response);
       return respData;
     } on EmptyException {
       throw AuthException();
