@@ -114,6 +114,12 @@ void configureDepedencies() {
 
   getIt.registerFactory(() => ProfileBloc(getIt<ProfileUseCase>()));
 
+  getIt.registerLazySingleton(() => ProfileUpdateUseCase(getIt<AuthRepositoryImpl>()));
+
+  getIt.registerFactory(() => ProfileUpdateBloc(getIt<ProfileUpdateUseCase>()));
+
+  getIt.registerFactory(() => ProfileUpdateFormBloc());
+
   /// Delete Account
   getIt.registerLazySingleton(() => DeleteAccountUseCase(getIt<AuthRepositoryImpl>()));
 

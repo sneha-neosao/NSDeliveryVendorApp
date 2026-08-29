@@ -37,6 +37,8 @@ class ApiUrl {
 
   static const profileList = "/profile/list";
 
+  static const profileUpdate = "/profile/update";
+
   static const dashboardSummaryStats = "/dashboard/summary-stats";
 
   static const dashboardPerformanceMetrics = "/dashboard/performance-metrics";

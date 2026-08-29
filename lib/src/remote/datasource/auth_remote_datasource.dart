@@ -45,6 +45,8 @@ sealed class RemoteDataSource {
 
   Future<ProfileResponse> ProfileList(String token);
 
+  Future<ProfileUpdateResponse> ProfileUpdate(String token, ProfileUpdateParams params);
+
   Future<SummaryStatsResponse> DashboardSummaryStats(String token);
 
   Future<PerformanceMetricsResponse> DashboardPerformanceMetrics(String token);
@@ -495,6 +497,39 @@ class RemoteDataSourceImpl implements RemoteDataSource {
       );
 
       final respData = ProfileResponse.fromJson(response);
+      return respData;
+    } on EmptyException {
+      throw AuthException();
+    } catch (e) {
+      logger.e(e);
+      if (e.toString() == noElement) {
+        throw AuthException();
+      }
+      if (e is ApiException) {
+        rethrow;
+      }
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<ProfileUpdateResponse> ProfileUpdate(
+      String token, ProfileUpdateParams params) async {
+    try {
+      final response = await _helper.execute(
+        method: Method.put,
+        url: ApiUrl.profileUpdate,
+        data: params.toFormData(),
+        options: Options(
+          contentType: Headers.formUrlEncodedContentType,
+          headers: {
+            'Authorization': 'Bearer $token',
+            'accept': 'application/json',
+          },
+        ),
+      );
+
+      final respData = ProfileUpdateResponse.fromJson(response);
       return respData;
     } on EmptyException {
       throw AuthException();

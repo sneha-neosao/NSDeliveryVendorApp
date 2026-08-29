@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/theme/app_color.dart';
+import '../../bloc/profile_update_form_bloc/profile_update_form_bloc.dart';
 import 'edit_profile_textfield_widget.dart';
 
 class EditProfileInputWidget extends StatelessWidget {
@@ -51,6 +53,9 @@ class EditProfileInputWidget extends StatelessWidget {
             controller: firstNameController,
             isRequired: true,
             textCapitalization: TextCapitalization.words,
+            onChanged: (val) => context
+                .read<ProfileUpdateFormBloc>()
+                .add(ProfileUpdateFirstNameChangedEvent(val.trim())),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'Please enter first name';
@@ -71,6 +76,9 @@ class EditProfileInputWidget extends StatelessWidget {
             controller: middleNameController,
             isRequired: false,
             textCapitalization: TextCapitalization.words,
+            onChanged: (val) => context
+                .read<ProfileUpdateFormBloc>()
+                .add(ProfileUpdateMiddleNameChangedEvent(val.trim())),
           ),
           16.hS,
 
@@ -82,6 +90,9 @@ class EditProfileInputWidget extends StatelessWidget {
             controller: lastNameController,
             isRequired: true,
             textCapitalization: TextCapitalization.words,
+            onChanged: (val) => context
+                .read<ProfileUpdateFormBloc>()
+                .add(ProfileUpdateLastNameChangedEvent(val.trim())),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'Please enter last name';
@@ -106,6 +117,9 @@ class EditProfileInputWidget extends StatelessWidget {
               FilteringTextInputFormatter.digitsOnly,
               LengthLimitingTextInputFormatter(10),
             ],
+            onChanged: (val) => context
+                .read<ProfileUpdateFormBloc>()
+                .add(ProfileUpdateContactChangedEvent(val.trim())),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'Please enter contact number';

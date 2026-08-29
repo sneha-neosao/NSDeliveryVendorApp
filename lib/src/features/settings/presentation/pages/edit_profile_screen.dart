@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../configs/injector/injector_conf.dart';
 import '../../../../core/blocs/theme/theme_bloc.dart';
 import '../../../../core/blocs/translate/translate_bloc.dart';
@@ -8,9 +9,13 @@ import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/session/session_manager.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../widgets/app_button_widget.dart';
+import '../../../widgets/snackbar_widget.dart';
 import '../../bloc/profile_bloc/profile_bloc.dart';
+import '../../bloc/profile_update_bloc/profile_update_bloc.dart';
+import '../../bloc/profile_update_form_bloc/profile_update_form_bloc.dart';
 import '../widgets/edit_profile_header_widget.dart';
 import '../widgets/edit_profile_input_widget.dart';
+import '../widgets/edit_profile_shimmer_widget.dart';
 
 /// Edit Profile Screen displaying form inputs for First Name, Middle Name, Last Name, and Contact Number.
 class EditProfileScreen extends StatefulWidget {
@@ -28,7 +33,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _contactController = TextEditingController();
 
-  bool _isLoading = false;
   bool _isDataPopulated = false;
 
   @override
@@ -81,11 +85,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-  void _handleSaveProfile() {
+  void _handleSaveProfile(BuildContext blocContext) {
     primaryFocus?.unfocus();
 
     if (_formKey.currentState?.validate() ?? false) {
-      // Profile form inputs validated
+      blocContext.read<ProfileUpdateBloc>().add(
+            UpdateProfileEvent(
+              firstName: _firstNameController.text.trim(),
+              middleName: _middleNameController.text.trim().isNotEmpty
+                  ? _middleNameController.text.trim()
+                  : null,
+              lastName: _lastNameController.text.trim(),
+              entityContact: _contactController.text.trim(),
+            ),
+          );
     }
   }
 
@@ -96,29 +109,62 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         BlocProvider(
           create: (_) => getIt<ProfileBloc>()..add(FetchProfileEvent()),
         ),
+        BlocProvider(create: (_) => getIt<ProfileUpdateBloc>()),
+        BlocProvider(create: (_) => getIt<ProfileUpdateFormBloc>()),
         BlocProvider(create: (_) => getIt<ThemeBloc>()),
         BlocProvider(create: (_) => getIt<TranslateBloc>()),
       ],
-      child: BlocListener<ProfileBloc, ProfileState>(
-        listener: (context, state) {
-          if (state is ProfileSuccessState) {
-            final profile = state.data.data;
-            if (profile != null && mounted && !_isDataPopulated) {
-              setState(() {
-                _isDataPopulated = true;
-                final fName = _cleanString(profile.firstName);
-                final mName = _cleanString(profile.middleName);
-                final lName = _cleanString(profile.lastName);
-                final contact = _cleanString(profile.entityContact);
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<ProfileBloc, ProfileState>(
+            listener: (context, state) {
+              if (state is ProfileSuccessState) {
+                final profile = state.data.data;
+                if (profile != null && mounted && !_isDataPopulated) {
+                  setState(() {
+                    _isDataPopulated = true;
+                    final fName = _cleanString(profile.firstName);
+                    final mName = _cleanString(profile.middleName);
+                    final lName = _cleanString(profile.lastName);
+                    final contact = _cleanString(profile.entityContact);
 
-                _firstNameController.text = fName ?? '';
-                _middleNameController.text = mName ?? '';
-                _lastNameController.text = lName ?? '';
-                _contactController.text = contact ?? '';
-              });
-            }
-          }
-        },
+                    _firstNameController.text = fName ?? '';
+                    _middleNameController.text = mName ?? '';
+                    _lastNameController.text = lName ?? '';
+                    _contactController.text = contact ?? '';
+                  });
+
+                  context.read<ProfileUpdateFormBloc>().add(
+                        ProfileUpdateInitFormDataEvent(
+                          firstName: _firstNameController.text,
+                          middleName: _middleNameController.text,
+                          lastName: _lastNameController.text,
+                          contact: _contactController.text,
+                        ),
+                      );
+                }
+              }
+            },
+          ),
+          BlocListener<ProfileUpdateBloc, ProfileUpdateState>(
+            listener: (context, state) {
+              if (state is ProfileUpdateSuccessState) {
+                appSnackBar(
+                  context,
+                  AppColor.green,
+                  state.data.message ?? 'Profile updated successfully',
+                );
+                context.pop(true);
+              } else if (state is ProfileUpdateFailureState) {
+                appSnackBar(
+                  context,
+                  AppColor.bright_red,
+                  state.message,
+                );
+              }
+            },
+          ),
+        ],
         child: Scaffold(
           backgroundColor: AppColor.white,
           body: Column(
@@ -144,20 +190,37 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Input Form Container
-                        EditProfileInputWidget(
-                          firstNameController: _firstNameController,
-                          middleNameController: _middleNameController,
-                          lastNameController: _lastNameController,
-                          contactController: _contactController,
+                        // Input Form Container with Shimmer
+                        BlocBuilder<ProfileBloc, ProfileState>(
+                          builder: (context, profileState) {
+                            if ((profileState is ProfileLoadingState ||
+                                    profileState is ProfileInitialState) &&
+                                !_isDataPopulated) {
+                              return const EditProfileShimmerWidget();
+                            }
+
+                            return EditProfileInputWidget(
+                              firstNameController: _firstNameController,
+                              middleNameController: _middleNameController,
+                              lastNameController: _lastNameController,
+                              contactController: _contactController,
+                            );
+                          },
                         ),
                         28.hS,
 
-                        // Save Changes Button
-                        AppButtonWidget(
-                          text: 'Save Changes',
-                          isLoading: _isLoading,
-                          onPressed: _handleSaveProfile,
+                        // Save Changes Button with Loader
+                        BlocBuilder<ProfileUpdateBloc, ProfileUpdateState>(
+                          builder: (blocContext, updateState) {
+                            final isLoading =
+                                updateState is ProfileUpdateLoadingState;
+
+                            return AppButtonWidget(
+                              text: 'Save Changes',
+                              isLoading: isLoading,
+                              onPressed: () => _handleSaveProfile(blocContext),
+                            );
+                          },
                         ),
                       ],
                     ),
