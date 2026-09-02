@@ -1,25 +1,60 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:nsdelivery_vendor_app/src/core/session/session_manager.dart';
 
 class NoficationService {
-  /// Stream controller for incoming foreground / opened notifications
-  static final StreamController<RemoteMessage> _onMessageStreamController =
-      StreamController<RemoteMessage>.broadcast();
+  // ============================================================
+  // CHANNEL IDS
+  // ============================================================
+
+  /// 🔔 Special channel - ONLY this channel rings the bell repeatedly
+  static const String bellChannelId = '1001';
+  static const String bellChannelName = 'Order Assignments';
+
+  /// 🔕 Normal channel - all other notifications
+  static const String generalChannelId = 'general_channel';
+  static const String generalChannelName = 'General';
+
+  // ============================================================
+  // STREAMS
+  // ============================================================
+
+  static final StreamController<RemoteMessage>
+  _onMessageStreamController =
+  StreamController<RemoteMessage>.broadcast();
+
   static Stream<RemoteMessage> get onMessageStream =>
       _onMessageStreamController.stream;
 
-  /// ✅ Declare the local notification plugin here
+  static final StreamController<String>
+  _onTokenRefreshStreamController =
+  StreamController<String>.broadcast();
+
+  static Stream<String> get onTokenRefreshStream =>
+      _onTokenRefreshStreamController.stream;
+
+  // ============================================================
+  // LOCAL NOTIFICATION PLUGIN
+  // ============================================================
+
   static final FlutterLocalNotificationsPlugin
-  _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  _flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
+
+  // ============================================================
+  // REQUEST PERMISSION
+  // ============================================================
 
   static Future<void> requestNotificationPermission() async {
-    /// Request permission for notifications
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    final FirebaseMessaging messaging = FirebaseMessaging.instance;
 
     await messaging.setForegroundNotificationPresentationOptions(
       alert: true,
@@ -27,18 +62,19 @@ class NoficationService {
       sound: true,
     );
 
-    NotificationSettings settings = await FirebaseMessaging.instance
-        .requestPermission(
-          alert: true,
-          announcement: false,
-          badge: true,
-          carPlay: false,
-          criticalAlert: false,
-          provisional: false,
-          sound: true,
-        );
+    final NotificationSettings settings =
+    await messaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
 
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    if (settings.authorizationStatus ==
+        AuthorizationStatus.authorized) {
       print('User granted permission');
     } else if (settings.authorizationStatus ==
         AuthorizationStatus.provisional) {
@@ -48,182 +84,389 @@ class NoficationService {
     }
   }
 
+  // ============================================================
+  // GET FCM TOKEN
+  // ============================================================
+
   static Future<String?> getToken() async {
     try {
-      FirebaseMessaging messaging = FirebaseMessaging.instance;
-      String? token = await messaging.getToken();
-      print("FCM Token: $token");
+      final FirebaseMessaging messaging =
+          FirebaseMessaging.instance;
+
+      final String? token = await messaging.getToken();
+
+      print('FCM Token: $token');
+
       return token;
     } catch (e) {
-      print("Error getting FCM token: $e");
+      print('Error getting FCM token: $e');
       return null;
     }
   }
 
-  /// ✅ Initialize local notifications and create the custom sound channel
-  static void initLocalNotifications() async {
-    const AndroidInitializationSettings androidInitializationSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-    const InitializationSettings initializationSettings =
-        InitializationSettings(android: androidInitializationSettings);
-    
-    await _flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  // ============================================================
+  // INITIALIZE LOCAL NOTIFICATIONS
+  // ============================================================
 
-    // Create the Order Assignment Channel with the custom sound
-    // This allows the sound to play even if the app is in the background
-    const AndroidNotificationChannel orderChannel = AndroidNotificationChannel(
-      'order_assignment_channel_v2', 
-      'Order Assignments',
-      description: 'Critical notifications for new order assignments',
+  static Future<void> initLocalNotifications() async {
+    const AndroidInitializationSettings
+    androidInitializationSettings =
+    AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    const InitializationSettings initializationSettings =
+    InitializationSettings(
+      android: androidInitializationSettings,
+    );
+
+    await _flutterLocalNotificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        print('🔔 Local notification tapped with payload: ${response.payload}');
+        // Stop ringing sound immediately on notification tap
+        cancelAll();
+
+        if (response.payload != null && response.payload!.isNotEmpty) {
+          try {
+            final Map<String, dynamic> data =
+            Map<String, dynamic>.from(jsonDecode(response.payload!));
+            _onMessageStreamController.add(RemoteMessage(data: data));
+          } catch (_) {
+            _onMessageStreamController.add(
+              RemoteMessage(data: {'payload': response.payload}),
+            );
+          }
+        }
+      },
+    );
+
+    // ==========================================================
+    // 🔔 CHANNEL 1001 - BELL CHANNEL (REPEATED RINGING)
+    // ==========================================================
+
+    const AndroidNotificationChannel bellChannel =
+    AndroidNotificationChannel(
+      bellChannelId,
+      bellChannelName,
+      description:
+      'Critical notifications that play the notification bell repeatedly',
       importance: Importance.max,
       playSound: true,
-      sound: RawResourceAndroidNotificationSound('notification_bell'),
+      sound: RawResourceAndroidNotificationSound(
+        'notification_bell',
+      ),
+      enableVibration: true,
+      enableLights: true,
+      audioAttributesUsage: AudioAttributesUsage.alarm,
+    );
+
+    // ==========================================================
+    // 🔕 GENERAL CHANNEL - NO CUSTOM BELL
+    // ==========================================================
+
+    const AndroidNotificationChannel generalChannel =
+    AndroidNotificationChannel(
+      generalChannelId,
+      generalChannelName,
+      description: 'General application notifications',
+      importance: Importance.high,
+      playSound: true,
       enableVibration: true,
     );
 
-    await _flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(orderChannel);
+    final AndroidFlutterLocalNotificationsPlugin?
+    androidPlugin =
+    _flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
 
-    print("Notification channels initialized with custom sound.");
+    // Create / update channels
+    await androidPlugin?.createNotificationChannel(
+      bellChannel,
+    );
+
+    await androidPlugin?.createNotificationChannel(
+      generalChannel,
+    );
+
+    print('========================================');
+    print('Notification channels initialized');
+    print('🔔 Bell Channel ID: $bellChannelId (Insistent Alarm Sound)');
+    print('🔕 General Channel ID: $generalChannelId');
+    print('========================================');
   }
 
-  /// Stop all active notification sounds/alerts
-  static void cancelAll() {
-    _flutterLocalNotificationsPlugin.cancelAll();
-    print("🔔 All notifications cancelled.");
+  // ============================================================
+  // CANCEL ALL NOTIFICATIONS (STOPS RINGING)
+  // ============================================================
+
+  static Future<void> cancelAll() async {
+    await _flutterLocalNotificationsPlugin.cancelAll();
+
+    print('🔔 All notifications cancelled.');
   }
 
-  static void showLocalNotification(RemoteMessage message) async {
+  // ============================================================
+  // SHOW LOCAL NOTIFICATION
+  // ============================================================
+
+  static Future<void> showLocalNotification(
+      RemoteMessage message,
+      ) async {
     // Skip manual local notification on iOS
-    if (Platform.isIOS) return;
+    if (Platform.isIOS) {
+      return;
+    }
 
-    final String? title = message.notification?.title;
-    final String? body = message.notification?.body;
     final Map<String, dynamic> data = message.data;
 
-    // Check if this is an order assignment notification
-    final bool isOrderAssignment = 
-        (title?.toLowerCase().contains('order') ?? false) || 
-        (title?.toLowerCase().contains('assign') ?? false) ||
-        (title?.toLowerCase().contains('new task') ?? false) ||
-        data['type'] == 'order_assignment' ||
-        data['notification_type'] == 'ASSIGNED' ||
-        data['status'] == 'assigned';
+    // Support both notification payload and data-only messages
+    final String title = message.notification?.title ??
+        data['title']?.toString() ??
+        'New Order Assignment';
+    final String body = message.notification?.body ??
+        data['body']?.toString() ??
+        data['message']?.toString() ??
+        'You have a new order assignment';
 
-    print("🔔 Processing notification: '$title'");
-    print("🔔 Is Order Assignment: $isOrderAssignment");
+    // ==========================================================
+    // GET CHANNEL ID FROM FCM DATA & DETECT ORDER ASSIGNMENT
+    // ==========================================================
+
+    final String incomingChannelId =
+        data['channel_id']?.toString() ??
+            message.notification?.android?.channelId ??
+            '';
+
+    final String msgType = (data['type'] ?? data['notification_type'] ?? data['status'] ?? '').toString().toLowerCase();
+    final String msgTitle = title.toLowerCase();
+
+    final bool isAssignmentType =
+        msgType == 'order_assignment' ||
+            msgType == 'assigned' ||
+            msgType == 'order_assigned' ||
+            msgType == 'new_order' ||
+            msgType == 'assignment' ||
+            msgTitle.contains('assigned') ||
+            msgTitle.contains('assignment') ||
+            msgTitle.contains('new order') ||
+            msgTitle.contains('new task');
+
+    final bool shouldRingBell =
+        incomingChannelId == bellChannelId || isAssignmentType;
+
+    print('========================================');
+    print('📩 Incoming Notification Display');
+    print('🔔 Title: $title');
+    print('📝 Body: $body');
+    print('📦 Data: $data');
+    print('📢 Incoming Channel ID: $incomingChannelId');
+    print(
+      shouldRingBell
+          ? '🔔 ORDER ASSIGNMENT DETECTED → REPEATED BELL RINGING ACTIVE'
+          : '🔕 GENERAL CHANNEL → NORMAL NOTIFICATION',
+    );
+    print('========================================');
+
+    // ==========================================================
+    // IMAGE
+    // ==========================================================
 
     final String? imageUrl =
         message.notification?.android?.imageUrl ??
-        message.notification?.apple?.imageUrl;
+            message.notification?.apple?.imageUrl ??
+            data['image']?.toString() ??
+            data['image_url']?.toString();
 
     BigPictureStyleInformation? bigPictureStyleInformation;
 
     if (imageUrl != null && imageUrl.isNotEmpty) {
-      final String filePath = await _downloadAndSaveImage(
-        imageUrl,
-        'notif_img.jpg',
-      );
-      bigPictureStyleInformation = BigPictureStyleInformation(
-        FilePathAndroidBitmap(filePath),
-        contentTitle: title,
-        summaryText: body,
-      );
+      try {
+        final String filePath = await _downloadAndSaveImage(
+          imageUrl,
+          'notif_img_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        );
+
+        bigPictureStyleInformation = BigPictureStyleInformation(
+          FilePathAndroidBitmap(filePath),
+          contentTitle: title,
+          summaryText: body,
+        );
+      } catch (e) {
+        print('❌ Failed to download notification image: $e');
+      }
     }
 
-    // Default Channel
-    String channelId = 'general_channel';
-    String channelName = 'General';
+    // ==========================================================
+    // SELECT CHANNEL & SOUND
+    // ==========================================================
+
+    String channelId;
+    String channelName;
     AndroidNotificationSound? customSound;
 
-    // Assignment Channel
-    if (isOrderAssignment) {
-      channelId = 'order_assignment_channel_v2';
-      channelName = 'Order Assignments';
-      customSound = const RawResourceAndroidNotificationSound('notification_bell');
+    if (shouldRingBell) {
+      // 🔔 CHANNEL 1001
+      channelId = bellChannelId;
+      channelName = bellChannelName;
+      customSound = const RawResourceAndroidNotificationSound(
+        'notification_bell',
+      );
+    } else {
+      // 🔕 GENERAL CHANNEL
+      channelId = generalChannelId;
+      channelName = generalChannelName;
+      customSound = null;
     }
 
+    // ==========================================================
+    // ANDROID NOTIFICATION DETAILS
+    // ==========================================================
+
     final AndroidNotificationDetails androidDetails =
-        AndroidNotificationDetails(
-          channelId,
-          channelName,
-          channelDescription: 'Channel for $channelName',
-          importance: Importance.max,
-          priority: Priority.high,
-          sound: customSound,
-          playSound: true,
-          additionalFlags: isOrderAssignment ? Int32List.fromList([4]) : null, // FLAG_INSISTENT loops sound
-          styleInformation:
-              bigPictureStyleInformation ??
-              const DefaultStyleInformation(true, true),
-        );
+    AndroidNotificationDetails(
+      channelId,
+      channelName,
+      channelDescription: 'Channel for $channelName',
+
+      // Max importance & priority for heads-up alert
+      importance: shouldRingBell ? Importance.max : Importance.high,
+      priority: shouldRingBell ? Priority.max : Priority.defaultPriority,
+
+      // 🔔 Custom bell sound for channel 1001
+      sound: customSound,
+      playSound: true,
+      enableVibration: true,
+      enableLights: true,
+      color: const Color(0xFFFA6624),
+
+      // 🔔 Alarm category & audio attributes ensure insistent looping
+      category: shouldRingBell
+          ? AndroidNotificationCategory.alarm
+          : AndroidNotificationCategory.status,
+      audioAttributesUsage: shouldRingBell
+          ? AudioAttributesUsage.alarm
+          : AudioAttributesUsage.notification,
+
+      // 🔔 FLAG_INSISTENT (4) repeats audio until user dismisses or taps
+      additionalFlags: shouldRingBell ? Int32List.fromList([4]) : null,
+
+      autoCancel: true,
+      ongoing: false,
+      fullScreenIntent: shouldRingBell,
+
+      styleInformation: bigPictureStyleInformation ??
+          const DefaultStyleInformation(
+            true,
+            true,
+          ),
+    );
 
     final NotificationDetails platformDetails = NotificationDetails(
       android: androidDetails,
     );
 
-    _flutterLocalNotificationsPlugin.show(
-      DateTime.now().millisecond, // Unique ID to allow multiple notifications
+    // ==========================================================
+    // SHOW NOTIFICATION
+    // ==========================================================
+
+    String? payloadString;
+    try {
+      payloadString = jsonEncode(data);
+    } catch (_) {
+      payloadString = data['payload']?.toString();
+    }
+
+    await _flutterLocalNotificationsPlugin.show(
+      DateTime.now().millisecondsSinceEpoch.remainder(100000),
       title,
       body,
       platformDetails,
-      payload: data['payload'],
+      payload: payloadString,
     );
   }
 
+  // ============================================================
+  // NOTIFICATION LISTENER
+  // ============================================================
+
   static void initNotificationListener() {
-    /// Listen for foreground messages
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Received a foreground message: ${message.notification?.title}');
-      print("📩 Foreground Message: ${message.notification?.title}");
-      print("📩 Message Body: ${message.notification?.body}");
-      print("📩 Message Data: ${message.data}");
-      // Handle the message here, e.g., show a dialog or notificatio
+    // ==========================================================
+    // 1. TERMINATED STATE (App opened via notification tap)
+    // ==========================================================
 
-      // Log everything from the message
-      print('📬 Full RemoteMessage payload: ${message.toMap()}');
-
-      // Print structured logs
-      print("🔔 Title: ${message.notification?.title}");
-      print("📝 Body: ${message.notification?.body}");
-      print("📦 Data: ${message.data}");
-
-      // Print the image URL if present (Android or Apple)
-      final String? imageUrl =
-          message.notification?.android?.imageUrl ??
-          message.notification?.apple?.imageUrl;
-      if (imageUrl != null && imageUrl.isNotEmpty) {
-        print("🖼️ Image URL: $imageUrl");
-      } else {
-        print("🖼️ No image URL found in notification");
+    FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
+      if (message != null) {
+        print('📲 App launched from terminated state via notification: ${message.data}');
+        cancelAll();
+        _onMessageStreamController.add(message);
       }
-
-      // ✅ Show local notification for foreground messages
-      showLocalNotification(message);
-
-      // ✅ Emit message to stream listeners for immediate UI refresh
-      _onMessageStreamController.add(message);
+    }).catchError((e) {
+      print('⚠️ Error checking initial FCM message: $e');
     });
 
-    /// Listen for background messages
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('A new onMessageOpenedApp event was published!');
-      _onMessageStreamController.add(message);
+    // ==========================================================
+    // 2. FOREGROUND STATE
+    // ==========================================================
 
-      /// Handle the message when the app is opened from a notification
+    FirebaseMessaging.onMessage.listen(
+          (RemoteMessage message) {
+        print('📩 Foreground FCM message received: ${message.messageId}');
+        print('🔔 Title: ${message.notification?.title ?? message.data['title']}');
+        print('📦 Data: ${message.data}');
+
+        // Show local notification with repeated sound / banner
+        showLocalNotification(message);
+
+        // Notify UI subscribers
+        _onMessageStreamController.add(message);
+      },
+    );
+
+    // ==========================================================
+    // 3. BACKGROUND STATE (Notification clicked / opened)
+    // ==========================================================
+
+    FirebaseMessaging.onMessageOpenedApp.listen(
+          (RemoteMessage message) {
+        print('📲 Notification opened by user: ${message.data}');
+        cancelAll();
+        _onMessageStreamController.add(message);
+      },
+    );
+
+    // ==========================================================
+    // 4. TOKEN REFRESH LISTENER
+    // ==========================================================
+
+    FirebaseMessaging.instance.onTokenRefresh.listen((String newToken) async {
+      print('🔄 FCM Token refreshed: $newToken');
+      await SessionManager.saveFirebaseToken(newToken);
+      _onTokenRefreshStreamController.add(newToken);
     });
   }
 
+  // ============================================================
+  // DOWNLOAD NOTIFICATION IMAGE
+  // ============================================================
+
   static Future<String> _downloadAndSaveImage(
-    String url,
-    String fileName,
-  ) async {
+      String url,
+      String fileName,
+      ) async {
     final Directory directory = await getApplicationDocumentsDirectory();
     final String filePath = '${directory.path}/$fileName';
+
     final http.Response response = await http.get(Uri.parse(url));
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Failed to download image: ${response.statusCode}',
+      );
+    }
+
     final File file = File(filePath);
     await file.writeAsBytes(response.bodyBytes);
+
     return filePath;
   }
 }

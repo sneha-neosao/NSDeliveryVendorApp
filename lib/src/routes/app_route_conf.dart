@@ -64,6 +64,13 @@ class AppRouteConf {
           return _fadePage(const EditProfileScreen());
         },
       ),
+      GoRoute(
+        path: AppRoute.createOffer.path,
+        name: AppRoute.createOffer.name,
+        pageBuilder: (context, state) {
+          return _fadePage(const CreateOffersScreen());
+        },
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainScreen(navigationShell: navigationShell);

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../configs/injector/injector.dart';
 import '../../../../configs/injector/injector_conf.dart';
 import '../../../../core/blocs/theme/theme_bloc.dart';
 import '../../../../core/blocs/translate/translate_bloc.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../widgets/snackbar_widget.dart';
+import '../../../../routes/app_route_path.dart';
+import '../widgets/offers_add_fab_widget.dart';
 import '../widgets/offers_header_widget.dart';
 import '../widgets/offers_list_view_widget.dart';
 
@@ -31,20 +34,7 @@ class _OffersScreenState extends State<OffersScreen> {
           create: (_) => getIt<OfferStatusToggleBloc>(),
         ),
       ],
-      child: const Scaffold(
-        backgroundColor: AppColor.white,
-        body: Column(
-          children: [
-            // ── Top Curved Gradient Header ────────────────────────
-            OffersHeaderWidget(title: 'Offers'),
-
-            // ── Offers List Content with Shimmer & Pagination ─────
-            Expanded(
-              child: _OffersContentWidget(),
-            ),
-          ],
-        ),
-      ),
+      child: const _OffersContentWidget(),
     );
   }
 }
@@ -73,26 +63,46 @@ class _OffersContentWidget extends StatelessWidget {
           );
         }
       },
-      child: BlocBuilder<OfferStatusToggleBloc, OfferStatusToggleState>(
-        builder: (context, toggleState) {
-          final loadingOfferId = toggleState is OfferStatusToggleLoadingState
-              ? toggleState.uuId
-              : null;
+      child: Scaffold(
+        backgroundColor: AppColor.white,
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        floatingActionButton: OffersAddFabWidget(
+          onTap: () {
+            context.push(AppRoute.createOffer.path);
+          },
+        ),
+        body: Column(
+          children: [
+            // ── Top Curved Gradient Header ────────────────────────
+            const OffersHeaderWidget(title: 'Offers'),
 
-          return OffersListViewWidget(
-            loadingOfferId: loadingOfferId,
-            onToggleOffer: (offer, nextStatus) {
-              if (offer.uuId != null && offer.uuId!.isNotEmpty) {
-                context.read<OfferStatusToggleBloc>().add(
-                      ToggleOfferStatusEvent(
-                        uuId: offer.uuId!,
-                        isActive: nextStatus,
-                      ),
-                    );
-              }
-            },
-          );
-        },
+            // ── Offers List Content with Shimmer & Pagination ─────
+            Expanded(
+              child: BlocBuilder<OfferStatusToggleBloc, OfferStatusToggleState>(
+                builder: (context, toggleState) {
+                  final loadingOfferId =
+                      toggleState is OfferStatusToggleLoadingState
+                          ? toggleState.uuId
+                          : null;
+
+                  return OffersListViewWidget(
+                    loadingOfferId: loadingOfferId,
+                    onToggleOffer: (offer, nextStatus) {
+                      if (offer.uuId != null && offer.uuId!.isNotEmpty) {
+                        context.read<OfferStatusToggleBloc>().add(
+                              ToggleOfferStatusEvent(
+                                uuId: offer.uuId!,
+                                isActive: nextStatus,
+                              ),
+                            );
+                      }
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
