@@ -9,6 +9,9 @@ import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../widgets/snackbar_widget.dart';
 import '../../../../routes/app_route_path.dart';
+import '../../bloc/offer_create_bloc/offer_create_bloc.dart';
+import '../../bloc/offer_create_form_bloc/offer_create_form_bloc.dart';
+import '../../domain/offer_create_usecase.dart';
 import '../widgets/create_offer_bottom_actions_widget.dart';
 import '../widgets/create_offer_header_widget.dart';
 import '../widgets/create_offer_input_widget.dart';
@@ -33,6 +36,8 @@ class _CreateOffersScreenState extends State<CreateOffersScreen> {
   final TextEditingController _startDateController = TextEditingController();
   final TextEditingController _endDateController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _termsConditionsController =
+      TextEditingController();
 
   String _selectedDiscountType = 'Percentage (%)';
   bool _isActive = true;
@@ -47,6 +52,7 @@ class _CreateOffersScreenState extends State<CreateOffersScreen> {
     _startDateController.dispose();
     _endDateController.dispose();
     _descriptionController.dispose();
+    _termsConditionsController.dispose();
     super.dispose();
   }
 
@@ -58,9 +64,49 @@ class _CreateOffersScreenState extends State<CreateOffersScreen> {
     }
   }
 
-  void _handleCreateOffer() {
+  void _handleCreateOffer(BuildContext context) {
     primaryFocus?.unfocus();
-    if (_formKey.currentState?.validate() != true) {
+    final formState = context.read<OfferCreateFormBloc>().state;
+
+    final couponCode = formState.couponCode.isNotEmpty
+        ? formState.couponCode
+        : _promoCodeController.text.trim();
+    final title = formState.title.isNotEmpty
+        ? formState.title
+        : _titleController.text.trim();
+    final couponType = formState.couponType.isNotEmpty
+        ? formState.couponType
+        : (_selectedDiscountType.contains('Percentage')
+            ? 'percentage'
+            : 'flat');
+    final discValue = double.tryParse(formState.discValue.isNotEmpty
+            ? formState.discValue
+            : _discountValueController.text.trim()) ??
+        0.0;
+    final orderValue = double.tryParse(formState.minOrderValue.isNotEmpty
+            ? formState.minOrderValue
+            : _minOrderValueController.text.trim()) ??
+        0.0;
+    final capLimit = formState.maxDiscountLimit.isNotEmpty
+        ? formState.maxDiscountLimit
+        : _maxDiscountLimitController.text.trim();
+    final startDate = formState.startDate.isNotEmpty
+        ? formState.startDate
+        : _startDateController.text.trim();
+    final endDate = formState.endDate.isNotEmpty
+        ? formState.endDate
+        : _endDateController.text.trim();
+    final description = formState.description.isNotEmpty
+        ? formState.description
+        : _descriptionController.text.trim();
+    final terms = formState.termsCondition.isNotEmpty
+        ? formState.termsCondition
+        : _termsConditionsController.text.trim();
+
+    if (couponCode.isEmpty ||
+        title.isEmpty ||
+        discValue <= 0 ||
+        orderValue < 0) {
       appSnackBar(
         context,
         AppColor.bright_red,
@@ -69,7 +115,7 @@ class _CreateOffersScreenState extends State<CreateOffersScreen> {
       return;
     }
 
-    if (_startDateController.text.trim().isEmpty) {
+    if (startDate.isEmpty) {
       appSnackBar(
         context,
         AppColor.bright_red,
@@ -78,7 +124,7 @@ class _CreateOffersScreenState extends State<CreateOffersScreen> {
       return;
     }
 
-    if (_endDateController.text.trim().isEmpty) {
+    if (endDate.isEmpty) {
       appSnackBar(
         context,
         AppColor.bright_red,
@@ -87,11 +133,21 @@ class _CreateOffersScreenState extends State<CreateOffersScreen> {
       return;
     }
 
-    appSnackBar(
-      context,
-      AppColor.green,
-      'Offer "${_promoCodeController.text.trim()}" ready to create',
+    final params = OfferCreateParams(
+      couponCode: couponCode,
+      title: title,
+      couponType: couponType,
+      discValue: discValue,
+      orderValue: orderValue,
+      capLimit: capLimit.isNotEmpty ? capLimit : null,
+      startDate: startDate,
+      expiryDate: endDate,
+      couponDescription: description.isNotEmpty ? description : null,
+      termsCondition: terms.isNotEmpty ? terms : null,
+      isActive: formState.isActive,
     );
+
+    context.read<OfferCreateBloc>().add(CreateOfferSubmitEvent(params));
   }
 
   @override
@@ -100,6 +156,8 @@ class _CreateOffersScreenState extends State<CreateOffersScreen> {
       providers: [
         BlocProvider(create: (_) => getIt<ThemeBloc>()),
         BlocProvider(create: (_) => getIt<TranslateBloc>()),
+        BlocProvider(create: (_) => getIt<OfferCreateBloc>()),
+        BlocProvider(create: (_) => getIt<OfferCreateFormBloc>()),
       ],
       child: PopScope(
         canPop: false,
@@ -141,6 +199,7 @@ class _CreateOffersScreenState extends State<CreateOffersScreen> {
                           startDateController: _startDateController,
                           endDateController: _endDateController,
                           descriptionController: _descriptionController,
+                          termsConditionsController: _termsConditionsController,
                           selectedDiscountType: _selectedDiscountType,
                           isActive: _isActive,
                           onDiscountTypeChanged: (val) {
@@ -163,9 +222,31 @@ class _CreateOffersScreenState extends State<CreateOffersScreen> {
                 ),
               ),
 
-              // ── Bottom Action (Create Offer Button) ─────────────
-              CreateOfferBottomActionsWidget(
-                onCreate: _handleCreateOffer,
+              // ── Bottom Action (Create Offer Button with BlocConsumer) ──
+              BlocConsumer<OfferCreateBloc, OfferCreateState>(
+                listener: (ctx, state) {
+                  if (state is OfferCreateFailureState) {
+                    appSnackBar(
+                      ctx,
+                      AppColor.bright_red,
+                      state.message,
+                    );
+                  } else if (state is OfferCreateSuccessState) {
+                    appSnackBar(
+                      ctx,
+                      AppColor.green,
+                      state.data.message ?? 'Offer created successfully',
+                    );
+                    _handleBack(ctx);
+                  }
+                },
+                builder: (ctx, state) {
+                  final isLoading = state is OfferCreateLoadingState;
+                  return CreateOfferBottomActionsWidget(
+                    isLoading: isLoading,
+                    onCreate: () => _handleCreateOffer(ctx),
+                  );
+                },
               ),
             ],
           ),

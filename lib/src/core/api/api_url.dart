@@ -49,6 +49,8 @@ class ApiUrl {
 
   static String offerStatusToggle(String uuId) => "/offers/$uuId/status";
 
+  static const offerCreate = "/offers/create";
+
   static const updateFirebaseToken = "/auth/update-firebase-token";
 
   static const deleteAccount = "/auth/delete-account";

@@ -1,10 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_font.dart';
+import '../../bloc/offer_create_form_bloc/offer_create_form_bloc.dart';
 import 'create_offer_date_picker_widget.dart';
 import 'create_offer_dropdown_widget.dart';
 import 'create_offer_textfield_widget.dart';
@@ -18,6 +20,7 @@ class CreateOfferInputWidget extends StatelessWidget {
   final TextEditingController startDateController;
   final TextEditingController endDateController;
   final TextEditingController descriptionController;
+  final TextEditingController termsConditionsController;
   final String selectedDiscountType;
   final bool isActive;
   final ValueChanged<String?> onDiscountTypeChanged;
@@ -33,6 +36,7 @@ class CreateOfferInputWidget extends StatelessWidget {
     required this.startDateController,
     required this.endDateController,
     required this.descriptionController,
+    required this.termsConditionsController,
     required this.selectedDiscountType,
     required this.isActive,
     required this.onDiscountTypeChanged,
@@ -41,6 +45,8 @@ class CreateOfferInputWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final formBloc = context.read<OfferCreateFormBloc>();
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -85,6 +91,8 @@ class CreateOfferInputWidget extends StatelessWidget {
               FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
               LengthLimitingTextInputFormatter(20),
             ],
+            onChanged: (val) =>
+                formBloc.add(OfferCreatePromoCodeChangedEvent(val.trim())),
             validator: (val) {
               if (val == null || val.trim().isEmpty) {
                 return 'Please enter promo code';
@@ -102,6 +110,8 @@ class CreateOfferInputWidget extends StatelessWidget {
             controller: titleController,
             isRequired: true,
             textCapitalization: TextCapitalization.sentences,
+            onChanged: (val) =>
+                formBloc.add(OfferCreateTitleChangedEvent(val.trim())),
             validator: (val) {
               if (val == null || val.trim().isEmpty) {
                 return 'Please enter offer title';
@@ -118,7 +128,14 @@ class CreateOfferInputWidget extends StatelessWidget {
             selectedValue: selectedDiscountType,
             items: const ['Percentage (%)', 'Flat (₹)'],
             isRequired: true,
-            onChanged: onDiscountTypeChanged,
+            onChanged: (val) {
+              onDiscountTypeChanged(val);
+              if (val != null) {
+                final couponType =
+                    val.contains('Percentage') ? 'percentage' : 'flat';
+                formBloc.add(OfferCreateDiscountTypeChangedEvent(couponType));
+              }
+            },
           ),
 
           14.hS,
@@ -133,6 +150,8 @@ class CreateOfferInputWidget extends StatelessWidget {
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
             ],
+            onChanged: (val) =>
+                formBloc.add(OfferCreateDiscountValueChangedEvent(val.trim())),
             validator: (val) {
               if (val == null || val.trim().isEmpty) {
                 return 'Please enter discount value';
@@ -153,6 +172,8 @@ class CreateOfferInputWidget extends StatelessWidget {
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
             ],
+            onChanged: (val) =>
+                formBloc.add(OfferCreateMinOrderValueChangedEvent(val.trim())),
             validator: (val) {
               if (val == null || val.trim().isEmpty) {
                 return 'Please enter min. order value';
@@ -166,13 +187,15 @@ class CreateOfferInputWidget extends StatelessWidget {
           // 6. Maximum Discount Limit (Optional)
           CreateOfferTextField(
             label: 'Maximum Discount Limit',
-            hintText: 'E.g. 150 (Optional)',
+            hintText: 'E.g. 150',
             controller: maxDiscountLimitController,
             isRequired: false,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
             ],
+            onChanged: (val) =>
+                formBloc.add(OfferCreateMaxDiscountLimitChangedEvent(val.trim())),
           ),
 
           14.hS,
@@ -197,18 +220,35 @@ class CreateOfferInputWidget extends StatelessWidget {
 
           14.hS,
 
-          // 9. Description (Terms & Conditions)
+          // 9. Description (Optional)
           CreateOfferTextField(
             label: 'Description',
-            hintText: 'Offer terms and conditions...',
+            hintText: 'Enter offer description...',
             controller: descriptionController,
+            isRequired: false,
             maxLines: 3,
             textCapitalization: TextCapitalization.sentences,
+            onChanged: (val) =>
+                formBloc.add(OfferCreateDescriptionChangedEvent(val.trim())),
+          ),
+
+          14.hS,
+
+          // 10. Terms & Conditions (Optional)
+          CreateOfferTextField(
+            label: 'Terms & Conditions',
+            hintText: 'Enter terms and conditions...',
+            controller: termsConditionsController,
+            isRequired: false,
+            maxLines: 3,
+            textCapitalization: TextCapitalization.sentences,
+            onChanged: (val) =>
+                formBloc.add(OfferCreateTermsConditionChangedEvent(val.trim())),
           ),
 
           16.hS,
 
-          // 10. Is Active Toggle
+          // 11. Is Active Toggle
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -230,7 +270,10 @@ class CreateOfferInputWidget extends StatelessWidget {
                       value: isActive,
                       activeTrackColor: AppColor.primary,
                       inactiveTrackColor: AppColor.gray.withValues(alpha: 0.35),
-                      onChanged: onIsActiveChanged,
+                      onChanged: (val) {
+                        onIsActiveChanged(val);
+                        formBloc.add(OfferCreateIsActiveChangedEvent(val));
+                      },
                     ),
                   ),
                   8.wS,

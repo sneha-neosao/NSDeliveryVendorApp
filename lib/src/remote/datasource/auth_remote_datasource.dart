@@ -6,6 +6,8 @@ import '../models/profile_model/profile_update_image_response.dart';
 import '../../features/settings/domain/profile_update_image_usecase.dart';
 import '../models/offers_model/offer_status_toggle_response.dart';
 import '../../features/offers/domain/offer_status_toggle_usecase.dart';
+import '../models/offers_model/offer_create_response.dart';
+import '../../features/offers/domain/offer_create_usecase.dart';
 import '../../configs/injector/injector.dart';
 import '../../core/constants/error_message.dart';
 
@@ -61,6 +63,8 @@ sealed class RemoteDataSource {
   Future<OffersListResponse> OffersList(String token, OffersListParams params);
 
   Future<OfferStatusToggleResponse> OfferStatusToggle(String token, OfferStatusToggleParams params);
+
+  Future<OfferCreateResponse> OfferCreate(String token, OfferCreateParams params);
 }
 
 class RemoteDataSourceImpl implements RemoteDataSource {
@@ -819,6 +823,39 @@ class RemoteDataSourceImpl implements RemoteDataSource {
       );
 
       final respData = OfferStatusToggleResponse.fromJson(response);
+      return respData;
+    } on EmptyException {
+      throw AuthException();
+    } catch (e) {
+      logger.e(e);
+      if (e.toString() == noElement) {
+        throw AuthException();
+      }
+      if (e is ApiException) {
+        rethrow;
+      }
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<OfferCreateResponse> OfferCreate(
+      String token, OfferCreateParams params) async {
+    try {
+      final response = await _helper.execute(
+        method: Method.post,
+        url: ApiUrl.offerCreate,
+        data: params.toJson(),
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        ),
+      );
+
+      final respData = OfferCreateResponse.fromJson(response);
       return respData;
     } on EmptyException {
       throw AuthException();
