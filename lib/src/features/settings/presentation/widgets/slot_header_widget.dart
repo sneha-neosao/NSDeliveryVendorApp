@@ -13,7 +13,7 @@ class SlotHeaderWidget extends StatelessWidget {
   const SlotHeaderWidget({
     super.key,
     this.title = 'Time Slots',
-    this.subtitle = 'Manage your store operating hours',
+    this.subtitle,
     this.onBackTap,
   });
 

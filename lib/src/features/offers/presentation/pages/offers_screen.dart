@@ -65,12 +65,12 @@ class _OffersContentWidget extends StatelessWidget {
       },
       child: Scaffold(
         backgroundColor: AppColor.white,
-        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-        floatingActionButton: OffersAddFabWidget(
-          onTap: () {
-            context.push(AppRoute.createOffer.path);
-          },
-        ),
+        // floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        // floatingActionButton: OffersAddFabWidget(
+        //   onTap: () {
+        //     context.push(AppRoute.createOffer.path);
+        //   },
+        // ),
         body: Column(
           children: [
             // ── Top Curved Gradient Header ────────────────────────

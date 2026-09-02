@@ -56,7 +56,6 @@ class _SlotScreenState extends State<SlotScreen> {
                 // ── Top Header ──────────────────────────────────────────
                 const SlotHeaderWidget(
                   title: 'Time Slots',
-                  subtitle: 'Manage your operating hours',
                 ),
 
                 // ── Body Content with Pagination & Shimmer ──────────────

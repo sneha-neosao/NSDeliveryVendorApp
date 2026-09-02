@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
@@ -180,9 +181,24 @@ class NoficationService {
         AndroidFlutterLocalNotificationsPlugin>();
 
     // Create / update channels
-    await androidPlugin?.createNotificationChannel(
-      bellChannel,
-    );
+    try {
+      await androidPlugin?.createNotificationChannel(
+        bellChannel,
+      );
+    } catch (e) {
+      print('⚠️ Failed to create bell channel with custom sound: $e');
+      const AndroidNotificationChannel fallbackBellChannel =
+          AndroidNotificationChannel(
+        bellChannelId,
+        bellChannelName,
+        description: 'Critical order notifications',
+        importance: Importance.max,
+        playSound: true,
+        enableVibration: true,
+        enableLights: true,
+      );
+      await androidPlugin?.createNotificationChannel(fallbackBellChannel);
+    }
 
     await androidPlugin?.createNotificationChannel(
       generalChannel,
@@ -376,13 +392,56 @@ class NoficationService {
       payloadString = data['payload']?.toString();
     }
 
-    await _flutterLocalNotificationsPlugin.show(
-      DateTime.now().millisecondsSinceEpoch.remainder(100000),
-      title,
-      body,
-      platformDetails,
-      payload: payloadString,
-    );
+    final int notificationId =
+        DateTime.now().millisecondsSinceEpoch.remainder(100000);
+
+    try {
+      await _flutterLocalNotificationsPlugin.show(
+        notificationId,
+        title,
+        body,
+        platformDetails,
+        payload: payloadString,
+      );
+    } on PlatformException catch (e) {
+      print('⚠️ PlatformException showing notification (sound/resource issue): $e');
+      print('🔄 Falling back to default notification sound...');
+      
+      // Fallback details without custom sound to prevent app crash if native resource is missing in current build
+      final AndroidNotificationDetails fallbackAndroidDetails =
+          AndroidNotificationDetails(
+        generalChannelId,
+        generalChannelName,
+        channelDescription: 'General Notifications',
+        importance: Importance.max,
+        priority: Priority.max,
+        playSound: true,
+        enableVibration: true,
+        enableLights: true,
+        color: const Color(0xFFFA6624),
+        autoCancel: true,
+        styleInformation: bigPictureStyleInformation ??
+            const DefaultStyleInformation(true, true),
+      );
+
+      final NotificationDetails fallbackDetails = NotificationDetails(
+        android: fallbackAndroidDetails,
+      );
+
+      try {
+        await _flutterLocalNotificationsPlugin.show(
+          notificationId,
+          title,
+          body,
+          fallbackDetails,
+          payload: payloadString,
+        );
+      } catch (fallbackError) {
+        print('❌ Failed to show fallback notification: $fallbackError');
+      }
+    } catch (e) {
+      print('❌ Error showing notification: $e');
+    }
   }
 
   // ============================================================

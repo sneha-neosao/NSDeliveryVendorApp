@@ -1,9 +1,9 @@
 import 'package:equatable/equatable.dart';
 import 'package:fpdart/fpdart.dart';
-import '../../../../core/errors/failures.dart';
-import '../../../../core/usecases/usecase.dart';
-import '../../../../remote/models/offers_model/offer_create_response.dart';
-import '../../../../remote/repositories/repository_impl.dart';
+import '../../../core/errors/failures.dart';
+import '../../../core/usecases/usecase.dart';
+import '../../../remote/models/offers_model/offer_create_response.dart';
+import '../../../remote/repositories/repository_impl.dart';
 
 class OfferCreateUseCase
     implements UseCase<OfferCreateResponse, OfferCreateParams> {

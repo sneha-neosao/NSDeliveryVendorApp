@@ -74,41 +74,72 @@ class OrderCardWidget extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top Row: Order ID & Status Chip
+                // Top Row: Order ID & Status Chip & Receipt Button
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    Flexible(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 32.r,
+                            height: 32.r,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColor.orangeTint2,
+                            ),
+                            child: Icon(
+                              Icons.shopping_bag_outlined,
+                              size: 16.r,
+                              color: AppColor.primary,
+                            ),
+                          ),
+                          8.wS,
+                          Flexible(
+                            child: Text(
+                              order.orderId,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    color: AppColor.charcoal,
+                                    fontSize: 15.sp,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    8.wS,
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
+                        _buildStatusChip(context, order.status),
+                        8.wS,
                         Container(
                           width: 32.r,
                           height: 32.r,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: AppColor.orangeTint2,
+                            border: Border.all(
+                              color: AppColor.primary.withValues(alpha: 0.25),
+                              width: 1.r,
+                            ),
                           ),
-                          child: Icon(
-                            Icons.receipt_rounded,
-                            size: 16.r,
-                            color: AppColor.primary,
+                          child: Center(
+                            child: Icon(
+                              Icons.receipt_long_rounded,
+                              size: 16.r,
+                              color: AppColor.primary,
+                            ),
                           ),
-                        ),
-                        8.wS,
-                        Text(
-                          order.orderId,
-                          softWrap: true,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(
-                                color: AppColor.charcoal,
-                                fontSize: 15.sp,
-                                fontWeight: FontWeight.w700,
-                              ),
                         ),
                       ],
                     ),
-                    _buildStatusChip(context, order.status),
                   ],
                 ),
                 10.hS,

@@ -274,7 +274,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     // ── Top Header ──────────────────────────────────────────
                     EditProfileHeaderWidget(
                       title: 'Edit Profile',
-                      subtitle: 'Update your personal details',
                       onBackTap: () => _handleBack(context),
                     ),
 

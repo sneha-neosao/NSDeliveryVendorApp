@@ -61,12 +61,13 @@ class _OrderHistoryViewWidgetState extends State<OrderHistoryViewWidget> {
           );
         }
 
-        // ── Failure ────────────────────────────────────────────
+        // ── Failure / No Data ──────────────────────────────────
         if (state is OrderHistoryFailureState) {
           return OrderEmptyStateWidget(
-            title: 'Failed to load history',
-            description: state.message,
-            icon: Icons.error_outline_rounded,
+            title: state.message.isNotEmpty
+                ? state.message
+                : 'No Order History',
+            icon: Icons.receipt_long_outlined,
             onRefresh: () {
               context
                   .read<OrderHistoryBloc>()
@@ -82,9 +83,7 @@ class _OrderHistoryViewWidgetState extends State<OrderHistoryViewWidget> {
           if (items.isEmpty) {
             return OrderEmptyStateWidget(
               title: 'No Order History',
-              description:
-                  'Past delivered and cancelled orders will be archived and shown here for your records.',
-              icon: Icons.history_rounded,
+              icon: Icons.receipt_long_outlined,
               onRefresh: () {
                 context
                     .read<OrderHistoryBloc>()

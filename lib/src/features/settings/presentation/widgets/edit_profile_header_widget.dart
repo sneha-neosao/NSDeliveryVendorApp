@@ -13,7 +13,7 @@ class EditProfileHeaderWidget extends StatelessWidget {
   const EditProfileHeaderWidget({
     super.key,
     this.title = 'Edit Profile',
-    this.subtitle = 'Update your personal details',
+    this.subtitle,
     this.onBackTap,
   });
 

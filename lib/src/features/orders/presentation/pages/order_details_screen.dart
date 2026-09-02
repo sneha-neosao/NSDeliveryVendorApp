@@ -90,11 +90,12 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                         return const OrderDetailsShimmerWidget();
                       }
 
-                      // ── Failure ──────────────────────────────────────
+                      // ── Failure / Not Found ──────────────────────────
                       if (state is OrderDetailsFailureState) {
                         return OrderEmptyStateWidget(
-                          title: 'Failed to load details',
-                          description: state.message,
+                          title: state.message.isNotEmpty
+                              ? state.message
+                              : 'Order Details Unavailable',
                           icon: Icons.error_outline_rounded,
                           onRefresh: () {
                             context

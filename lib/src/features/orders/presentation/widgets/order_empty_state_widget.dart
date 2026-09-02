@@ -2,23 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/theme/app_color.dart';
+import '../../../../core/theme/app_font.dart';
 
 class OrderEmptyStateWidget extends StatelessWidget {
   final String title;
-  final String description;
+  final String? description;
   final IconData icon;
   final VoidCallback? onRefresh;
 
   const OrderEmptyStateWidget({
     super.key,
     required this.title,
-    required this.description,
+    this.description,
     this.icon = Icons.receipt_long_outlined,
     this.onRefresh,
   });
 
   @override
   Widget build(BuildContext context) {
+    final hasDescription = description != null && description!.trim().isNotEmpty;
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 48.h),
       child: Center(
@@ -46,29 +49,34 @@ class OrderEmptyStateWidget extends StatelessWidget {
               ),
             ),
             20.hS,
-            // Empty State Title
+
+            // Message / Title coming from API
             Text(
               title,
               textAlign: TextAlign.center,
               softWrap: true,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: AppColor.charcoal,
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
+              style: AppFont.style(
+                color: AppColor.charcoal,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-            8.hS,
-            // Empty State Description
-            Text(
-              description,
-              textAlign: TextAlign.center,
-              softWrap: true,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColor.textSecondary,
-                    fontSize: 13.sp,
-                    height: 1.4,
-                  ),
-            ),
+
+            if (hasDescription) ...[
+              8.hS,
+              Text(
+                description!,
+                textAlign: TextAlign.center,
+                softWrap: true,
+                style: AppFont.style(
+                  color: AppColor.textSecondary,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w400,
+                  height: 1.4,
+                ),
+              ),
+            ],
+
             if (onRefresh != null) ...[
               20.hS,
               GestureDetector(
@@ -94,11 +102,11 @@ class OrderEmptyStateWidget extends StatelessWidget {
                       6.wS,
                       Text(
                         'Refresh',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColor.primaryDark,
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
+                        style: AppFont.style(
+                          color: AppColor.primaryDark,
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),

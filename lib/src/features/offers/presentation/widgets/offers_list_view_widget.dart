@@ -175,7 +175,8 @@ class _OffersListViewWidgetState extends State<OffersListViewWidget> {
                 return OfferCardWidget(
                   offer: offer,
                   isLoading: isOfferLoading,
-                  onToggle: (nextStatus) {
+                  onTap: () {
+                    final nextStatus = !(offer.isActive ?? false);
                     widget.onToggleOffer?.call(offer, nextStatus);
                   },
                 );

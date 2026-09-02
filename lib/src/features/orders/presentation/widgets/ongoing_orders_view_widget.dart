@@ -99,12 +99,13 @@ class _OngoingOrdersViewWidgetState extends State<OngoingOrdersViewWidget> {
               );
             }
 
-            // ── Failure ────────────────────────────────────────────
+            // ── Failure / No Data ──────────────────────────────────
             if (state is OrdersListFailureState) {
               return OrderEmptyStateWidget(
-                title: 'Failed to load orders',
-                description: state.message,
-                icon: Icons.error_outline_rounded,
+                title: state.message.isNotEmpty
+                    ? state.message
+                    : 'No Ongoing Orders',
+                icon: Icons.receipt_long_outlined,
                 onRefresh: () {
                   context
                       .read<OrdersListBloc>()
@@ -120,9 +121,7 @@ class _OngoingOrdersViewWidgetState extends State<OngoingOrdersViewWidget> {
               if (items.isEmpty) {
                 return OrderEmptyStateWidget(
                   title: 'No Ongoing Orders',
-                  description:
-                      'You do not have any active or incoming orders right now. New customer orders will appear here automatically.',
-                  icon: Icons.access_time_rounded,
+                  icon: Icons.receipt_long_outlined,
                   onRefresh: () {
                     context
                         .read<OrdersListBloc>()
