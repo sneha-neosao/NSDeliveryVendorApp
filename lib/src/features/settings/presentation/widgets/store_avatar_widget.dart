@@ -4,15 +4,21 @@ import '../../../../core/theme/app_color.dart';
 
 class StoreAvatarWidget extends StatelessWidget {
   final double? size;
+  final String? imageUrl;
 
   const StoreAvatarWidget({
     super.key,
     this.size,
+    this.imageUrl,
   });
 
   @override
   Widget build(BuildContext context) {
     final avatarSize = size ?? 82.r;
+    final hasImage = imageUrl != null &&
+        imageUrl!.trim().isNotEmpty &&
+        imageUrl!.trim().toLowerCase() != 'null' &&
+        imageUrl!.trim().toLowerCase() != 'string';
 
     return Container(
       width: avatarSize,
@@ -31,17 +37,31 @@ class StoreAvatarWidget extends StatelessWidget {
       ),
       padding: EdgeInsets.all(10.r),
       child: Center(
-        child: Container(
-          decoration: BoxDecoration(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(14.r),
+          child: Container(
+            width: double.infinity,
+            height: double.infinity,
             color: AppColor.orangeTint2.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(14.r),
-          ),
-          child: Center(
-            child: Icon(
-              Icons.storefront_rounded,
-              color: AppColor.primary,
-              size: 42.r,
-            ),
+            child: hasImage
+                ? Image.network(
+                    imageUrl!.trim(),
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Center(
+                      child: Icon(
+                        Icons.storefront_rounded,
+                        color: AppColor.primary,
+                        size: (avatarSize * 0.5).r,
+                      ),
+                    ),
+                  )
+                : Center(
+                    child: Icon(
+                      Icons.storefront_rounded,
+                      color: AppColor.primary,
+                      size: (avatarSize * 0.5).r,
+                    ),
+                  ),
           ),
         ),
       ),

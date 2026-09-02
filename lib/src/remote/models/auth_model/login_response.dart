@@ -78,6 +78,7 @@ class Restaurant {
   String? entityName;
   String? email;
   bool? isActive;
+  String? entityImage;
 
   Restaurant({
     required this.id,
@@ -88,6 +89,7 @@ class Restaurant {
     required this.entityName,
     required this.email,
     required this.isActive,
+    this.entityImage,
   });
 
   factory Restaurant.fromRawJson(String str) =>
@@ -104,6 +106,9 @@ class Restaurant {
     entityName: json["entity_name"] ?? "",
     email: json["email"] ?? "",
     isActive: json["is_active"] ?? false,
+    entityImage: json["entity_image"]?.toString() ??
+        json["image"]?.toString() ??
+        json["profile_image"]?.toString(),
   );
 
   Map<String, dynamic> toJson() => {
@@ -115,5 +120,6 @@ class Restaurant {
     "entity_name": entityName,
     "email": email,
     "is_active": isActive,
+    "entity_image": entityImage,
   };
 }

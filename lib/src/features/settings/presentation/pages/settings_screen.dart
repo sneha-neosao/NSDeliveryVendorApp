@@ -31,6 +31,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _storeName = 'Vendor';
   String _email = '';
   String _phone = '';
+  String? _imageUrl;
   bool _isServiceOn = true;
 
   @override
@@ -58,8 +59,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() {
         final entity = _cleanString(restaurant.entityName);
         final mail = _cleanString(restaurant.email);
+        final img = _cleanString(restaurant.entityImage);
         if (entity != null) _storeName = entity;
         if (mail != null) _email = mail;
+        if (img != null) _imageUrl = img;
       });
     }
   }
@@ -91,10 +94,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     final entity = _cleanString(profile.entityName);
                     final mail = _cleanString(profile.email);
                     final contact = _cleanString(profile.entityContact);
+                    final img = _cleanString(profile.entityImage);
 
                     if (entity != null) _storeName = entity;
                     if (mail != null) _email = mail;
                     if (contact != null) _phone = contact;
+                    if (img != null) _imageUrl = img;
 
                     // Serviceability toggle based on auto_is_serviceable flag
                     if (profile.autoIsServiceable != null) {
@@ -196,6 +201,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             storeName: _storeName,
                             email: _email,
                             phoneNumber: _phone,
+                            imageUrl: _imageUrl,
                             onEditTap: () async {
                               final result = await blocContext
                                   .push(AppRoute.editProfile.path);

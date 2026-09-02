@@ -15,6 +15,7 @@ import '../../../../core/utils/logger.dart';
 import '../../../../remote/models/auth_model/app_version_response.dart';
 import '../../../../routes/app_route_path.dart';
 import '../../../login/bloc/update_firebase_token_bloc/update_firebase_token_bloc.dart';
+import '../../../settings/bloc/profile_bloc/profile_bloc.dart';
 import '../../../splash/bloc/app_version_bloc/app_version_bloc.dart';
 import '../../bloc/performance_metrics_bloc/performance_metrics_bloc.dart';
 import '../../bloc/summary_stats_bloc/summary_stats_bloc.dart';
@@ -33,6 +34,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   String _entityName = '';
+  String? _userImage;
 
   @override
   void initState() {
@@ -40,12 +42,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _loadUserSession();
   }
 
+  String? _cleanString(String? val) {
+    if (val == null) return null;
+    final trimmed = val.trim();
+    if (trimmed.isEmpty ||
+        trimmed.toLowerCase() == 'string' ||
+        trimmed.toLowerCase() == 'null') {
+      return null;
+    }
+    return trimmed;
+  }
+
   Future<void> _loadUserSession() async {
     final session = await SessionManager.getUserSession();
-    final name = session?.data?.restaurant?.entityName;
-    if (name != null && name.isNotEmpty && mounted) {
+    final restaurant = session?.data?.restaurant;
+    if (restaurant != null && mounted) {
       setState(() {
-        _entityName = name;
+        final name = _cleanString(restaurant.entityName);
+        final img = _cleanString(restaurant.entityImage);
+        if (name != null) _entityName = name;
+        if (img != null) _userImage = img;
       });
     }
   }
@@ -166,6 +182,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           create: (_) => getIt<UpdateFirebaseTokenBloc>(),
         ),
         BlocProvider(
+          create: (_) => getIt<ProfileBloc>()..add(FetchProfileEvent()),
+        ),
+        BlocProvider(
           create: (_) =>
               getIt<AppVersionBloc>()..add(FetchAppVersionEvent()),
         ),
@@ -179,6 +198,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           return MultiBlocListener(
             listeners: [
+              BlocListener<ProfileBloc, ProfileState>(
+                listener: (context, state) {
+                  if (state is ProfileSuccessState) {
+                    final profile = state.data.data;
+                    if (profile != null && mounted) {
+                      setState(() {
+                        final entity = _cleanString(profile.entityName);
+                        final img = _cleanString(profile.entityImage);
+                        if (entity != null) _entityName = entity;
+                        if (img != null) _userImage = img;
+                      });
+                    }
+                  }
+                },
+              ),
               BlocListener<AppVersionBloc, AppVersionState>(
                 listener: (context, state) {
                   if (state is AppVersionSuccessState) {
@@ -196,6 +230,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     greeting: 'Hello,',
                     vendorName:
                         _entityName.isNotEmpty ? _entityName : 'Vendor',
+                    userImage: _userImage,
                     onProfileTap: () {
                       context.pushNamed(AppRoute.settings.name);
                     },
@@ -206,6 +241,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: RefreshIndicator(
                       color: AppColor.primary,
                       onRefresh: () async {
+                        blocContext
+                            .read<ProfileBloc>()
+                            .add(FetchProfileEvent());
                         blocContext
                             .read<SummaryStatsBloc>()
                             .add(FetchSummaryStatsEvent());

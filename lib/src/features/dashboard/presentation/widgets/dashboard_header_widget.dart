@@ -7,6 +7,7 @@ import '../../../../core/theme/app_font.dart';
 class DashboardHeaderWidget extends StatelessWidget {
   final String greeting;
   final String vendorName;
+  final String? userImage;
   final VoidCallback? onProfileTap;
   final VoidCallback? onSettingsTap;
 
@@ -14,6 +15,7 @@ class DashboardHeaderWidget extends StatelessWidget {
     super.key,
     this.greeting = 'Hello,',
     this.vendorName = 'Vendor',
+    this.userImage,
     this.onProfileTap,
     this.onSettingsTap,
   });
@@ -22,6 +24,10 @@ class DashboardHeaderWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
     final handleTap = onProfileTap ?? onSettingsTap;
+    final hasUserImage = userImage != null &&
+        userImage!.trim().isNotEmpty &&
+        userImage!.trim().toLowerCase() != 'null' &&
+        userImage!.trim().toLowerCase() != 'string';
 
     return Container(
       width: double.infinity,
@@ -56,31 +62,53 @@ class DashboardHeaderWidget extends StatelessWidget {
       child: Row(
         children: [
           // Vendor Avatar with white border
-          Container(
-            width: 48.r,
-            height: 48.r,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColor.pureWhite,
-              border: Border.all(
+          GestureDetector(
+            onTap: handleTap,
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              width: 48.r,
+              height: 48.r,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
                 color: AppColor.pureWhite,
-                width: 2.r,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColor.black.withValues(alpha: 0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+                border: Border.all(
+                  color: AppColor.pureWhite,
+                  width: 2.r,
                 ),
-              ],
-            ),
-            child: ClipOval(
-              child: Container(
-                color: AppColor.orangeTint2,
-                child: Icon(
-                  Icons.storefront_rounded,
-                  color: AppColor.primary,
-                  size: 26.r,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColor.black.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: Container(
+                  width: 48.r,
+                  height: 48.r,
+                  color: AppColor.orangeTint2,
+                  child: hasUserImage
+                      ? Image.network(
+                          userImage!.trim(),
+                          width: 48.r,
+                          height: 48.r,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Center(
+                            child: Icon(
+                              Icons.storefront_rounded,
+                              color: AppColor.primary,
+                              size: 26.r,
+                            ),
+                          ),
+                        )
+                      : Center(
+                          child: Icon(
+                            Icons.storefront_rounded,
+                            color: AppColor.primary,
+                            size: 26.r,
+                          ),
+                        ),
                 ),
               ),
             ),

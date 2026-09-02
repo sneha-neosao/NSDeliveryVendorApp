@@ -8,6 +8,7 @@ class ProfileInfoCardWidget extends StatelessWidget {
   final String storeName;
   final String email;
   final String phoneNumber;
+  final String? imageUrl;
   final VoidCallback? onEditTap;
 
   const ProfileInfoCardWidget({
@@ -15,6 +16,7 @@ class ProfileInfoCardWidget extends StatelessWidget {
     this.storeName = 'Aashu Snacks Corner',
     this.email = 'aashukale15@gmail.com',
     this.phoneNumber = '+91 98765 43210',
+    this.imageUrl,
     this.onEditTap,
   });
 
@@ -43,7 +45,10 @@ class ProfileInfoCardWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Storefront Icon/Avatar
-          StoreAvatarWidget(size: 72.r),
+          StoreAvatarWidget(
+            size: 72.r,
+            imageUrl: imageUrl,
+          ),
           14.wS,
           // Vendor Details (Store name, Email, Phone number)
           Expanded(
