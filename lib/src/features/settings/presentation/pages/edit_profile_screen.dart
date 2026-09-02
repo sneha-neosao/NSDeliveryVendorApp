@@ -13,6 +13,7 @@ import '../../../widgets/snackbar_widget.dart';
 import '../../bloc/profile_bloc/profile_bloc.dart';
 import '../../bloc/profile_update_bloc/profile_update_bloc.dart';
 import '../../bloc/profile_update_form_bloc/profile_update_form_bloc.dart';
+import '../widgets/edit_profile_avatar_widget.dart';
 import '../widgets/edit_profile_header_widget.dart';
 import '../widgets/edit_profile_input_widget.dart';
 import '../widgets/edit_profile_shimmer_widget.dart';
@@ -33,6 +34,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _contactController = TextEditingController();
 
+  String? _imageUrl;
   bool _isDataPopulated = false;
 
   @override
@@ -71,6 +73,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         final fName = _cleanString(restaurant.firstName);
         final mName = _cleanString(restaurant.middleName);
         final lName = _cleanString(restaurant.lastName);
+        final img = _cleanString(restaurant.entityImage);
 
         if (_firstNameController.text.isEmpty && fName != null) {
           _firstNameController.text = fName;
@@ -80,6 +83,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         }
         if (_lastNameController.text.isEmpty && lName != null) {
           _lastNameController.text = lName;
+        }
+        if (img != null) {
+          _imageUrl = img;
         }
       });
     }
@@ -127,11 +133,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     final mName = _cleanString(profile.middleName);
                     final lName = _cleanString(profile.lastName);
                     final contact = _cleanString(profile.entityContact);
+                    final img = _cleanString(profile.entityImage);
 
                     _firstNameController.text = fName ?? '';
                     _middleNameController.text = mName ?? '';
                     _lastNameController.text = lName ?? '';
                     _contactController.text = contact ?? '';
+                    if (img != null) _imageUrl = img;
                   });
 
                   context.read<ProfileUpdateFormBloc>().add(
@@ -188,8 +196,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   child: Form(
                     key: _formKey,
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        // Circular Profile Image with Orange Border
+                        BlocBuilder<ProfileBloc, ProfileState>(
+                          builder: (context, profileState) {
+                            final isProfileLoading =
+                                (profileState is ProfileLoadingState ||
+                                        profileState is ProfileInitialState) &&
+                                    !_isDataPopulated;
+
+                            return EditProfileAvatarWidget(
+                              imageUrl: _imageUrl,
+                              isLoading: isProfileLoading,
+                            );
+                          },
+                        ),
+                        20.hS,
+
                         // Input Form Container with Shimmer
                         BlocBuilder<ProfileBloc, ProfileState>(
                           builder: (context, profileState) {

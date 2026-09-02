@@ -197,19 +197,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           const SettingsHeaderWidget(),
                           28.hS,
                           // Floating White Profile Info Card Overlay
-                          ProfileInfoCardWidget(
-                            storeName: _storeName,
-                            email: _email,
-                            phoneNumber: _phone,
-                            imageUrl: _imageUrl,
-                            onEditTap: () async {
-                              final result = await blocContext
-                                  .push(AppRoute.editProfile.path);
-                              if (result == true && blocContext.mounted) {
-                                blocContext
-                                    .read<ProfileBloc>()
-                                    .add(FetchProfileEvent());
-                              }
+                          BlocBuilder<ProfileBloc, ProfileState>(
+                            builder: (context, profileState) {
+                              final isProfileLoading =
+                                  profileState is ProfileLoadingState ||
+                                      (profileState is ProfileInitialState &&
+                                          _imageUrl == null);
+
+                              return ProfileInfoCardWidget(
+                                storeName: _storeName,
+                                email: _email,
+                                phoneNumber: _phone,
+                                imageUrl: _imageUrl,
+                                isLoading: isProfileLoading,
+                                onEditTap: () async {
+                                  final result = await blocContext
+                                      .push(AppRoute.editProfile.path);
+                                  if (result == true && blocContext.mounted) {
+                                    blocContext
+                                        .read<ProfileBloc>()
+                                        .add(FetchProfileEvent());
+                                  }
+                                },
+                              );
                             },
                           ),
                           18.hS,

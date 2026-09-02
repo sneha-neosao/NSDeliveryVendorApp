@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_font.dart';
@@ -94,6 +95,19 @@ class DashboardHeaderWidget extends StatelessWidget {
                           width: 48.r,
                           height: 48.r,
                           fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Shimmer.fromColors(
+                              baseColor:
+                                  AppColor.border.withValues(alpha: 0.35),
+                              highlightColor: AppColor.pureWhite,
+                              child: Container(
+                                width: 48.r,
+                                height: 48.r,
+                                color: AppColor.pureWhite,
+                              ),
+                            );
+                          },
                           errorBuilder: (context, error, stackTrace) => Center(
                             child: Icon(
                               Icons.storefront_rounded,

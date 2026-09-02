@@ -9,6 +9,7 @@ class ProfileInfoCardWidget extends StatelessWidget {
   final String email;
   final String phoneNumber;
   final String? imageUrl;
+  final bool isLoading;
   final VoidCallback? onEditTap;
 
   const ProfileInfoCardWidget({
@@ -17,6 +18,7 @@ class ProfileInfoCardWidget extends StatelessWidget {
     this.email = 'aashukale15@gmail.com',
     this.phoneNumber = '+91 98765 43210',
     this.imageUrl,
+    this.isLoading = false,
     this.onEditTap,
   });
 
@@ -48,6 +50,7 @@ class ProfileInfoCardWidget extends StatelessWidget {
           StoreAvatarWidget(
             size: 72.r,
             imageUrl: imageUrl,
+            isLoading: isLoading,
           ),
           14.wS,
           // Vendor Details (Store name, Email, Phone number)
