@@ -36,7 +36,7 @@ class EditProfileTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Field Label with Optional / Required Indicator
+        // Field Label with Required Asterisk Indicator
         Row(
           children: [
             Text(
@@ -55,16 +55,6 @@ class EditProfileTextField extends StatelessWidget {
                   color: AppColor.bright_red,
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w700,
-                ),
-              ),
-            ] else ...[
-              4.wS,
-              Text(
-                '(Optional)',
-                style: AppFont.style(
-                  color: AppColor.slateGrey.withValues(alpha: 0.7),
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],

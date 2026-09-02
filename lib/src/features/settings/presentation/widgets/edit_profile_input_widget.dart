@@ -68,10 +68,10 @@ class EditProfileInputWidget extends StatelessWidget {
           ),
           16.hS,
 
-          // 2. Middle Name (Optional)
+          // 2. Middle Name
           EditProfileTextField(
             label: 'Middle Name',
-            hintText: 'Enter middle name (optional)',
+            hintText: 'Enter middle name',
             prefixIcon: Icons.person_outline_rounded,
             controller: middleNameController,
             isRequired: false,
