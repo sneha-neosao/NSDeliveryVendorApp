@@ -1,6 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:nsdelivery_vendor_app/src/core/api/api_exception.dart';
 import 'package:nsdelivery_vendor_app/src/core/errors/exceptions.dart';
+import '../../core/api/api_url.dart';
+import '../models/profile_model/profile_update_image_response.dart';
+import '../../features/settings/domain/profile_update_image_usecase.dart';
+import '../models/offers_model/offer_status_toggle_response.dart';
+import '../../features/offers/domain/offer_status_toggle_usecase.dart';
 import '../../configs/injector/injector.dart';
 import '../../core/constants/error_message.dart';
 
@@ -47,11 +52,15 @@ sealed class RemoteDataSource {
 
   Future<ProfileUpdateResponse> ProfileUpdate(String token, ProfileUpdateParams params);
 
+  Future<ProfileUpdateImageResponse> ProfileUpdateImage(String token, ProfileUpdateImageParams params);
+
   Future<SummaryStatsResponse> DashboardSummaryStats(String token);
 
   Future<PerformanceMetricsResponse> DashboardPerformanceMetrics(String token);
 
   Future<OffersListResponse> OffersList(String token, OffersListParams params);
+
+  Future<OfferStatusToggleResponse> OfferStatusToggle(String token, OfferStatusToggleParams params);
 }
 
 class RemoteDataSourceImpl implements RemoteDataSource {
@@ -546,6 +555,46 @@ class RemoteDataSourceImpl implements RemoteDataSource {
   }
 
   @override
+  Future<ProfileUpdateImageResponse> ProfileUpdateImage(
+      String token, ProfileUpdateImageParams params) async {
+    try {
+      final fileName = params.imageFile.path.split('/').last.split('\\').last;
+      final formData = FormData.fromMap({
+        'entity_image': await MultipartFile.fromFile(
+          params.imageFile.path,
+          filename: fileName,
+        ),
+      });
+
+      final response = await _helper.execute(
+        method: Method.put,
+        url: ApiUrl.profileUpdateImage,
+        data: formData,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'accept': 'application/json',
+          },
+        ),
+      );
+
+      final respData = ProfileUpdateImageResponse.fromJson(response);
+      return respData;
+    } on EmptyException {
+      throw AuthException();
+    } catch (e) {
+      logger.e(e);
+      if (e.toString() == noElement) {
+        throw AuthException();
+      }
+      if (e is ApiException) {
+        rethrow;
+      }
+      throw ServerException();
+    }
+  }
+
+  @override
   Future<SummaryStatsResponse> DashboardSummaryStats(String token) async {
     try {
       final response = await _helper.execute(
@@ -739,6 +788,37 @@ class RemoteDataSourceImpl implements RemoteDataSource {
       );
 
       final respData = ItemStatusToggleResponse.fromJson(response);
+      return respData;
+    } on EmptyException {
+      throw AuthException();
+    } catch (e) {
+      logger.e(e);
+      if (e.toString() == noElement) {
+        throw AuthException();
+      }
+      if (e is ApiException) {
+        rethrow;
+      }
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<OfferStatusToggleResponse> OfferStatusToggle(
+      String token, OfferStatusToggleParams params) async {
+    try {
+      final response = await _helper.execute(
+        method: Method.patch,
+        url: '${ApiUrl.offerStatusToggle(params.uuId)}?is_active=${params.isActive}',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'accept': 'application/json',
+          },
+        ),
+      );
+
+      final respData = OfferStatusToggleResponse.fromJson(response);
       return respData;
     } on EmptyException {
       throw AuthException();

@@ -5,6 +5,10 @@ import 'package:nsdelivery_vendor_app/src/core/errors/failures.dart';
 import 'package:nsdelivery_vendor_app/src/core/session/session_manager.dart';
 import 'package:nsdelivery_vendor_app/src/core/usecases/usecase.dart';
 import 'package:nsdelivery_vendor_app/src/core/utils/failure_converter.dart';
+import '../models/profile_model/profile_update_image_response.dart';
+import '../../features/settings/domain/profile_update_image_usecase.dart';
+import '../models/offers_model/offer_status_toggle_response.dart';
+import '../../features/offers/domain/offer_status_toggle_usecase.dart';
 import '../../configs/injector/injector.dart';
 
 /// Abstract Repository interface defining all data operations for the app
@@ -48,6 +52,8 @@ abstract class Repository {
   /// Offers
   Future<Either<Failure, OffersListResponse>> offers_list(OffersListParams params);
 
+  Future<Either<Failure, OfferStatusToggleResponse>> offer_status_toggle(OfferStatusToggleParams params);
+
   /// Settings / Time Slots
   Future<Either<Failure, SlotsListResponse>> slots_list(SlotsListParams params);
 
@@ -61,6 +67,8 @@ abstract class Repository {
   Future<Either<Failure, ProfileResponse>> profile_list(NoParams params);
 
   Future<Either<Failure, ProfileUpdateResponse>> profile_update(ProfileUpdateParams params);
+
+  Future<Either<Failure, ProfileUpdateImageResponse>> profile_update_image(ProfileUpdateImageParams params);
 }
 
 class AuthRepositoryImpl implements Repository {
@@ -607,6 +615,43 @@ class AuthRepositoryImpl implements Repository {
   }
 
   @override
+  Future<Either<Failure, ProfileUpdateImageResponse>> profile_update_image(
+      ProfileUpdateImageParams params) {
+    return _networkInfo.check<ProfileUpdateImageResponse>(
+      connected: () async {
+        try {
+          String token = await SessionManager.getAuthToken() ?? "";
+
+          final respData =
+              await _remoteDataSource.ProfileUpdateImage(token, params);
+
+          if (respData.status != 200) {
+            return Left(
+                CredentialFailure(respData.message ?? "Something went wrong"));
+          }
+
+          return Right(respData);
+        } on ServerException {
+          return Left(ServerFailure(mapFailureToMessage(ServerFailure(""))));
+        } catch (e) {
+          if (e is ApiException) {
+            return Left(ApiFailure(e.message));
+          }
+          return Left(ServerFailure(mapFailureToMessage(ServerFailure(""))));
+        }
+      },
+      notConnected: () async {
+        try {
+          return Left(
+              InternetFailure(mapFailureToMessage(InternetFailure(""))));
+        } on CacheException {
+          return Left(CacheFailure(mapFailureToMessage(CacheFailure(""))));
+        }
+      },
+    );
+  }
+
+  @override
   Future<Either<Failure, SummaryStatsResponse>> dashboard_summary_stats(
       NoParams params) {
     return _networkInfo.check<SummaryStatsResponse>(
@@ -832,6 +877,43 @@ class AuthRepositoryImpl implements Repository {
 
           final respData =
               await _remoteDataSource.ItemStatusToggle(token, params);
+
+          if (respData.status != 200) {
+            return Left(
+                CredentialFailure(respData.message ?? "Something went wrong"));
+          }
+
+          return Right(respData);
+        } on ServerException {
+          return Left(ServerFailure(mapFailureToMessage(ServerFailure(""))));
+        } catch (e) {
+          if (e is ApiException) {
+            return Left(ApiFailure(e.message));
+          }
+          return Left(ServerFailure(mapFailureToMessage(ServerFailure(""))));
+        }
+      },
+      notConnected: () async {
+        try {
+          return Left(
+              InternetFailure(mapFailureToMessage(InternetFailure(""))));
+        } on CacheException {
+          return Left(CacheFailure(mapFailureToMessage(CacheFailure(""))));
+        }
+      },
+    );
+  }
+
+  @override
+  Future<Either<Failure, OfferStatusToggleResponse>> offer_status_toggle(
+      OfferStatusToggleParams params) {
+    return _networkInfo.check<OfferStatusToggleResponse>(
+      connected: () async {
+        try {
+          String token = await SessionManager.getAuthToken() ?? "";
+
+          final respData =
+              await _remoteDataSource.OfferStatusToggle(token, params);
 
           if (respData.status != 200) {
             return Left(

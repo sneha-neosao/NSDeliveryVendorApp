@@ -5,6 +5,7 @@ import '../../../../configs/injector/injector_conf.dart';
 import '../../../../core/blocs/theme/theme_bloc.dart';
 import '../../../../core/blocs/translate/translate_bloc.dart';
 import '../../../../core/theme/app_color.dart';
+import '../../../widgets/snackbar_widget.dart';
 import '../widgets/offers_header_widget.dart';
 import '../widgets/offers_list_view_widget.dart';
 
@@ -26,6 +27,9 @@ class _OffersScreenState extends State<OffersScreen> {
           create: (_) =>
               getIt<OffersListBloc>()..add(const GetOffersListEvent(page: 1)),
         ),
+        BlocProvider(
+          create: (_) => getIt<OfferStatusToggleBloc>(),
+        ),
       ],
       child: const Scaffold(
         backgroundColor: AppColor.white,
@@ -36,10 +40,59 @@ class _OffersScreenState extends State<OffersScreen> {
 
             // ── Offers List Content with Shimmer & Pagination ─────
             Expanded(
-              child: OffersListViewWidget(),
+              child: _OffersContentWidget(),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _OffersContentWidget extends StatelessWidget {
+  const _OffersContentWidget();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<OfferStatusToggleBloc, OfferStatusToggleState>(
+      listener: (context, toggleState) {
+        if (toggleState is OfferStatusToggleSuccessState) {
+          appSnackBar(
+            context,
+            AppColor.green,
+            toggleState.data.message?.isNotEmpty == true
+                ? toggleState.data.message!
+                : 'Promotional offer status updated successfully',
+          );
+          context.read<OffersListBloc>().add(const GetOffersListEvent(page: 1));
+        } else if (toggleState is OfferStatusToggleFailureState) {
+          appSnackBar(
+            context,
+            AppColor.bright_red,
+            toggleState.message,
+          );
+        }
+      },
+      child: BlocBuilder<OfferStatusToggleBloc, OfferStatusToggleState>(
+        builder: (context, toggleState) {
+          final loadingOfferId = toggleState is OfferStatusToggleLoadingState
+              ? toggleState.uuId
+              : null;
+
+          return OffersListViewWidget(
+            loadingOfferId: loadingOfferId,
+            onToggleOffer: (offer, nextStatus) {
+              if (offer.uuId != null && offer.uuId!.isNotEmpty) {
+                context.read<OfferStatusToggleBloc>().add(
+                      ToggleOfferStatusEvent(
+                        uuId: offer.uuId!,
+                        isActive: nextStatus,
+                      ),
+                    );
+              }
+            },
+          );
+        },
       ),
     );
   }

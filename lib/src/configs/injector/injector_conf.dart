@@ -79,6 +79,10 @@ void configureDepedencies() {
 
   getIt.registerFactory(() => OffersListBloc(getIt<OffersListUseCase>()));
 
+  getIt.registerLazySingleton(() => OfferStatusToggleUseCase(getIt<AuthRepositoryImpl>()));
+
+  getIt.registerFactory(() => OfferStatusToggleBloc(getIt<OfferStatusToggleUseCase>()));
+
   /// Dashboard / Serviceability
   getIt.registerLazySingleton(() => ServiceabilityUpdateUseCase(getIt<AuthRepositoryImpl>()));
 
@@ -119,6 +123,10 @@ void configureDepedencies() {
   getIt.registerFactory(() => ProfileUpdateBloc(getIt<ProfileUpdateUseCase>()));
 
   getIt.registerFactory(() => ProfileUpdateFormBloc());
+
+  getIt.registerLazySingleton(() => ProfileUpdateImageUseCase(getIt<AuthRepositoryImpl>()));
+
+  getIt.registerFactory(() => ProfileUpdateImageBloc(getIt<ProfileUpdateImageUseCase>()));
 
   /// Delete Account
   getIt.registerLazySingleton(() => DeleteAccountUseCase(getIt<AuthRepositoryImpl>()));

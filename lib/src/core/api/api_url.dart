@@ -39,11 +39,15 @@ class ApiUrl {
 
   static const profileUpdate = "/profile/update";
 
+  static const profileUpdateImage = "/profile/update-image";
+
   static const dashboardSummaryStats = "/dashboard/summary-stats";
 
   static const dashboardPerformanceMetrics = "/dashboard/performance-metrics";
 
   static const offersList = "/offers/list";
+
+  static String offerStatusToggle(String uuId) => "/offers/$uuId/status";
 
   static const updateFirebaseToken = "/auth/update-firebase-token";
 

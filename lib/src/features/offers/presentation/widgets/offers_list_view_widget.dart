@@ -5,12 +5,20 @@ import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_font.dart';
 import '../../bloc/offers_list_bloc/offers_list_bloc.dart';
+import '../../../../remote/models/offers_model/offers_list_response.dart';
 import 'offer_card_widget.dart';
 import 'offers_empty_state_widget.dart';
 import 'offers_shimmer_widget.dart';
 
 class OffersListViewWidget extends StatefulWidget {
-  const OffersListViewWidget({super.key});
+  final String? loadingOfferId;
+  final void Function(OfferItem offer, bool nextStatus)? onToggleOffer;
+
+  const OffersListViewWidget({
+    super.key,
+    this.loadingOfferId,
+    this.onToggleOffer,
+  });
 
   @override
   State<OffersListViewWidget> createState() => _OffersListViewWidgetState();
@@ -161,7 +169,16 @@ class _OffersListViewWidgetState extends State<OffersListViewWidget> {
                 }
 
                 final offer = state.items[index];
-                return OfferCardWidget(offer: offer);
+                final isOfferLoading = widget.loadingOfferId != null &&
+                    widget.loadingOfferId == offer.uuId;
+
+                return OfferCardWidget(
+                  offer: offer,
+                  isLoading: isOfferLoading,
+                  onToggle: (nextStatus) {
+                    widget.onToggleOffer?.call(offer, nextStatus);
+                  },
+                );
               },
             ),
           );
