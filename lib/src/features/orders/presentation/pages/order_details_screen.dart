@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../configs/injector/injector.dart';
 import '../../../../configs/injector/injector_conf.dart';
 import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/theme/app_color.dart';
+import '../../../../routes/app_route_path.dart';
 import '../../../widgets/snackbar_widget.dart';
-import '../../bloc/order_details_bloc/order_details_bloc.dart';
-import '../../bloc/order_update_status_bloc/order_update_status_bloc.dart';
+import '../../domain/models/order_invoice_params.dart';
 import '../widgets/order_details_bill_summary_card_widget.dart';
 import '../widgets/order_details_bottom_action_widget.dart';
 import '../widgets/order_details_customer_card_widget.dart';
@@ -32,6 +33,8 @@ class OrderDetailsScreen extends StatefulWidget {
 }
 
 class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
+  String? _updatingStatus;
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
@@ -47,6 +50,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       child: BlocConsumer<OrderUpdateStatusBloc, OrderUpdateStatusState>(
         listener: (context, updateState) {
           if (updateState is OrderUpdateStatusSuccessState) {
+            setState(() {
+              _updatingStatus = null;
+            });
             final message = updateState.data.message?.isNotEmpty == true
                 ? updateState.data.message!
                 : 'Order status updated successfully';
@@ -56,6 +62,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                 .read<OrderDetailsBloc>()
                 .add(GetOrderDetailsEvent(widget.uuId));
           } else if (updateState is OrderUpdateStatusFailureState) {
+            setState(() {
+              _updatingStatus = null;
+            });
             appSnackBar(context, AppColor.bright_red, updateState.message);
           }
         },
@@ -73,9 +82,25 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                       subtitle = 'ORD_${state.data.data!.id}';
                     }
 
+                    final orderData = state is OrderDetailsSuccessState
+                        ? state.data.data
+                        : null;
+
                     return OrderDetailsHeaderWidget(
                       title: 'Order Details',
                       subtitle: subtitle,
+                      onInvoiceTap: (orderData?.uuId != null &&
+                              orderData!.uuId!.isNotEmpty)
+                          ? () {
+                              context.push(
+                                AppRoute.orderInvoice.path,
+                                extra: OrderInvoiceParams(
+                                  orderUuid: orderData.uuId!,
+                                  orderId: (orderData.id ?? '').toString(),
+                                ),
+                              );
+                            }
+                          : null,
                     );
                   },
                 ),
@@ -143,7 +168,22 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                                   child: Column(
                                     children: [
                                       // Status Banner Card
-                                      OrderDetailsStatusCardWidget(order: order),
+                                      OrderDetailsStatusCardWidget(
+                                        order: order,
+                                        onInvoiceTap: () {
+                                          if (order.uuId != null &&
+                                              order.uuId!.isNotEmpty) {
+                                            context.push(
+                                              AppRoute.orderInvoice.path,
+                                              extra: OrderInvoiceParams(
+                                                orderUuid: order.uuId!,
+                                                orderId: (order.id ?? '')
+                                                    .toString(),
+                                              ),
+                                            );
+                                          }
+                                        },
+                                      ),
                                       14.hS,
 
                                       // Customer & Delivery Address Card
@@ -196,11 +236,26 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                               orderStatus: order.orderStatus,
                               isLoading:
                                   updateState is OrderUpdateStatusLoadingState,
+                              updatingStatus: _updatingStatus,
                               onAcceptTap: () {
+                                setState(() {
+                                  _updatingStatus = 'ACCEPTED';
+                                });
                                 context.read<OrderUpdateStatusBloc>().add(
                                       UpdateOrderStatusEvent(
                                         uuId: widget.uuId,
                                         orderStatus: 'ACCEPTED',
+                                      ),
+                                    );
+                              },
+                              onRejectTap: () {
+                                setState(() {
+                                  _updatingStatus = 'REJECTED';
+                                });
+                                context.read<OrderUpdateStatusBloc>().add(
+                                      UpdateOrderStatusEvent(
+                                        uuId: widget.uuId,
+                                        orderStatus: 'REJECTED',
                                       ),
                                     );
                               },

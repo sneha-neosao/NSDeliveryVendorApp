@@ -9,6 +9,7 @@ import '../../../../routes/app_route_path.dart';
 import '../../../widgets/snackbar_widget.dart';
 import '../../bloc/order_update_status_bloc/order_update_status_bloc.dart';
 import '../../bloc/orders_list_bloc/orders_list_bloc.dart';
+import '../../domain/models/order_invoice_params.dart';
 import 'ongoing_order_card_widget.dart';
 import 'ongoing_orders_shimmer_widget.dart';
 import 'order_empty_state_widget.dart';
@@ -24,6 +25,7 @@ class OngoingOrdersViewWidget extends StatefulWidget {
 class _OngoingOrdersViewWidgetState extends State<OngoingOrdersViewWidget> {
   final ScrollController _scrollController = ScrollController();
   String? _updatingOrderUuId;
+  String? _updatingStatus;
 
   @override
   void initState() {
@@ -55,6 +57,7 @@ class _OngoingOrdersViewWidgetState extends State<OngoingOrdersViewWidget> {
   void _updateStatus(String uuId, String targetStatus) {
     setState(() {
       _updatingOrderUuId = uuId;
+      _updatingStatus = targetStatus;
     });
     context.read<OrderUpdateStatusBloc>().add(
           UpdateOrderStatusEvent(
@@ -75,6 +78,7 @@ class _OngoingOrdersViewWidgetState extends State<OngoingOrdersViewWidget> {
           appSnackBar(context, AppColor.green, message);
           setState(() {
             _updatingOrderUuId = null;
+            _updatingStatus = null;
           });
           // Refresh the orders list API on success
           context
@@ -84,6 +88,7 @@ class _OngoingOrdersViewWidgetState extends State<OngoingOrdersViewWidget> {
           appSnackBar(context, AppColor.bright_red, updateState.message);
           setState(() {
             _updatingOrderUuId = null;
+            _updatingStatus = null;
           });
         }
       },
@@ -146,9 +151,11 @@ class _OngoingOrdersViewWidgetState extends State<OngoingOrdersViewWidget> {
                   isLoadingMore: state.isLoadingMore,
                   scrollController: _scrollController,
                   updatingOrderUuId: _updatingOrderUuId,
+                  updatingStatus: _updatingStatus,
                   isActionLoading:
                       updateState is OrderUpdateStatusLoadingState,
                   onAcceptTap: (uuId) => _updateStatus(uuId, 'ACCEPTED'),
+                  onRejectTap: (uuId) => _updateStatus(uuId, 'REJECTED'),
                   onReadyTap: (uuId) =>
                       _updateStatus(uuId, 'READY_FOR_PICKUP'),
                 ),
@@ -169,8 +176,10 @@ class _OngoingOrdersListView extends StatelessWidget {
   final bool isLoadingMore;
   final ScrollController scrollController;
   final String? updatingOrderUuId;
+  final String? updatingStatus;
   final bool isActionLoading;
   final ValueChanged<String> onAcceptTap;
+  final ValueChanged<String> onRejectTap;
   final ValueChanged<String> onReadyTap;
 
   const _OngoingOrdersListView({
@@ -179,8 +188,10 @@ class _OngoingOrdersListView extends StatelessWidget {
     required this.isLoadingMore,
     required this.scrollController,
     this.updatingOrderUuId,
+    this.updatingStatus,
     required this.isActionLoading,
     required this.onAcceptTap,
+    required this.onRejectTap,
     required this.onReadyTap,
   });
 
@@ -212,6 +223,7 @@ class _OngoingOrdersListView extends StatelessWidget {
         return OngoingOrderCardWidget(
           order: item,
           isActionLoading: isItemUpdating,
+          isRejectLoading: isItemUpdating && updatingStatus == 'REJECTED',
           onTap: () {
             if (item.uuId != null && item.uuId!.isNotEmpty) {
               context.push(AppRoute.orderDetails.path, extra: item.uuId);
@@ -222,9 +234,25 @@ class _OngoingOrdersListView extends StatelessWidget {
               onAcceptTap(item.uuId!);
             }
           },
+          onRejectTap: () {
+            if (item.uuId != null && item.uuId!.isNotEmpty) {
+              onRejectTap(item.uuId!);
+            }
+          },
           onReadyTap: () {
             if (item.uuId != null && item.uuId!.isNotEmpty) {
               onReadyTap(item.uuId!);
+            }
+          },
+          onDownloadTap: () {
+            if (item.uuId != null && item.uuId!.isNotEmpty) {
+              context.push(
+                AppRoute.orderInvoice.path,
+                extra: OrderInvoiceParams(
+                  orderUuid: item.uuId!,
+                  orderId: (item.id ?? '').toString(),
+                ),
+              );
             }
           },
         );

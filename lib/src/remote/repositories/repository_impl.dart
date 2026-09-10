@@ -12,6 +12,7 @@ import '../../features/offers/domain/offer_status_toggle_usecase.dart';
 import '../models/offers_model/offer_create_response.dart';
 import '../../features/offers/domain/offer_create_usecase.dart';
 import '../../configs/injector/injector.dart';
+import '../models/dashboard_model/revenue_analytics_response.dart';
 
 /// Abstract Repository interface defining all data operations for the app
 
@@ -50,6 +51,8 @@ abstract class Repository {
   Future<Either<Failure, SummaryStatsResponse>> dashboard_summary_stats(NoParams params);
 
   Future<Either<Failure, PerformanceMetricsResponse>> dashboard_performance_metrics(NoParams params);
+
+  Future<Either<Failure, RevenueAnalyticsResponse>> dashboard_revenue_analytics(NoParams params);
 
   /// Offers
   Future<Either<Failure, OffersListResponse>> offers_list(OffersListParams params);
@@ -702,6 +705,43 @@ class AuthRepositoryImpl implements Repository {
 
           final respData =
               await _remoteDataSource.DashboardPerformanceMetrics(token);
+
+          if (respData.status != 200) {
+            return Left(
+                CredentialFailure(respData.message ?? "Something went wrong"));
+          }
+
+          return Right(respData);
+        } on ServerException {
+          return Left(ServerFailure(mapFailureToMessage(ServerFailure(""))));
+        } catch (e) {
+          if (e is ApiException) {
+            return Left(ApiFailure(e.message));
+          }
+          return Left(ServerFailure(mapFailureToMessage(ServerFailure(""))));
+        }
+      },
+      notConnected: () async {
+        try {
+          return Left(
+              InternetFailure(mapFailureToMessage(InternetFailure(""))));
+        } on CacheException {
+          return Left(CacheFailure(mapFailureToMessage(CacheFailure(""))));
+        }
+      },
+    );
+  }
+
+  @override
+  Future<Either<Failure, RevenueAnalyticsResponse>>
+      dashboard_revenue_analytics(NoParams params) {
+    return _networkInfo.check<RevenueAnalyticsResponse>(
+      connected: () async {
+        try {
+          String token = await SessionManager.getAuthToken() ?? "";
+
+          final respData =
+              await _remoteDataSource.DashboardRevenueAnalytics(token);
 
           if (respData.status != 200) {
             return Left(

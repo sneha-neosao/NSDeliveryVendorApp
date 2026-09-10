@@ -4,7 +4,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:path_provider/path_provider.dart';
@@ -23,6 +22,10 @@ class NoficationService {
   /// 🔕 Normal channel - all other notifications
   static const String generalChannelId = 'general_channel';
   static const String generalChannelName = 'General';
+
+  /// 📥 Download channel - progress notifications
+  static const String downloadChannelId = 'download_channel';
+  static const String downloadChannelName = 'File Downloads';
 
   // ============================================================
   // STREAMS
@@ -202,6 +205,20 @@ class NoficationService {
 
     await androidPlugin?.createNotificationChannel(
       generalChannel,
+    );
+
+    const AndroidNotificationChannel downloadChannel =
+    AndroidNotificationChannel(
+      downloadChannelId,
+      downloadChannelName,
+      description: 'Progress and status notifications for file downloads',
+      importance: Importance.low,
+      playSound: false,
+      enableVibration: false,
+    );
+
+    await androidPlugin?.createNotificationChannel(
+      downloadChannel,
     );
 
     print('========================================');
@@ -527,5 +544,75 @@ class NoficationService {
     await file.writeAsBytes(response.bodyBytes);
 
     return filePath;
+  }
+
+  // ============================================================
+  // DOWNLOAD PROGRESS & COMPLETION NOTIFICATIONS
+  // ============================================================
+
+  static Future<void> showDownloadProgressNotification({
+    required int id,
+    required String title,
+    required String body,
+    required int progress,
+    required int maxProgress,
+  }) async {
+    final AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+      downloadChannelId,
+      downloadChannelName,
+      channelDescription: 'Progress and status notifications for file downloads',
+      importance: Importance.low,
+      priority: Priority.low,
+      showProgress: true,
+      maxProgress: maxProgress,
+      progress: progress,
+      onlyAlertOnce: true,
+      ongoing: true,
+      autoCancel: false,
+    );
+
+    final NotificationDetails notificationDetails =
+        NotificationDetails(android: androidDetails);
+
+    await _flutterLocalNotificationsPlugin.show(
+      id,
+      title,
+      body,
+      notificationDetails,
+    );
+  }
+
+  static Future<void> showDownloadCompleteNotification({
+    required int id,
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+      generalChannelId,
+      generalChannelName,
+      channelDescription: 'Download complete notifications',
+      importance: Importance.high,
+      priority: Priority.high,
+      autoCancel: true,
+      playSound: true,
+    );
+
+    const NotificationDetails notificationDetails =
+        NotificationDetails(android: androidDetails);
+
+    await _flutterLocalNotificationsPlugin.show(
+      id,
+      title,
+      body,
+      notificationDetails,
+      payload: payload,
+    );
+  }
+
+  static Future<void> cancelNotification(int id) async {
+    await _flutterLocalNotificationsPlugin.cancel(id);
   }
 }

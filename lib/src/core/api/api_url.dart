@@ -1,10 +1,10 @@
 class ApiUrl {
   const ApiUrl._();
 
-  // static const baseUrl = "http://192.168.1.17:8001/api/v1/delivery_boy"; // TEST
+  // static const baseUrl = "http://192.168.1.17:8002/api/v1/restaurant"; // TEST
   static const baseUrl = "https://web.neosao.co.in/api/v1/restaurant"; // LIVE
 
-  // static const socketUrl = "http://172.20.10.2:8001"; // Socket
+  // static const socketUrl = "http://172.20.10.17:8001"; // Socket
   static const socketUrl = "https://web.neosao.co.in"; // Socket
 
   static const login = "/auth/login";
@@ -45,6 +45,8 @@ class ApiUrl {
 
   static const dashboardPerformanceMetrics = "/dashboard/performance-metrics";
 
+  static const dashboardRevenueAnalytics = "/dashboard/revenue-analytics";
+
   static const offersList = "/offers/list";
 
   static String offerStatusToggle(String uuId) => "/offers/$uuId/status";
@@ -56,5 +58,8 @@ class ApiUrl {
   static const deleteAccount = "/auth/delete-account";
 
   static const appVersion = "/auth/app-version";
+
+  static String orderInvoice(String uuId, String token) =>
+      "$baseUrl/orders/$uuId/invoice?token=$token";
 }
 

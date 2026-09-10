@@ -8,11 +8,13 @@ import '../../../../remote/models/order_history_model/order_history_response.dar
 class OrderHistoryCardWidget extends StatelessWidget {
   final OrderHistoryItem order;
   final VoidCallback? onTap;
+  final VoidCallback? onInvoiceTap;
 
   const OrderHistoryCardWidget({
     super.key,
     required this.order,
     this.onTap,
+    this.onInvoiceTap,
   });
 
   @override
@@ -44,7 +46,7 @@ class OrderHistoryCardWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Row 1: Order ID + Order Status Badge ─────────────
+            // ── Row 1: Order ID + Order Status Badge & Invoice Button ─────
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -56,7 +58,36 @@ class OrderHistoryCardWidget extends StatelessWidget {
                     color: AppColor.charcoal,
                   ),
                 ),
-                _buildStatusBadge(order.orderStatus),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildStatusBadge(order.orderStatus),
+                    8.wS,
+                    GestureDetector(
+                      onTap: onInvoiceTap ?? () {},
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        width: 28.r,
+                        height: 28.r,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColor.orangeTint2,
+                          border: Border.all(
+                            color: AppColor.primary.withValues(alpha: 0.25),
+                            width: 1.r,
+                          ),
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.receipt_long_rounded,
+                            size: 15.r,
+                            color: AppColor.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
 

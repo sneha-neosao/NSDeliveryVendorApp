@@ -16,7 +16,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.nsdelivery.deliveryboy"
+        applicationId = "com.nsdelivery.vendor"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

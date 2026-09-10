@@ -7,15 +7,19 @@ import '../../../../core/theme/app_font.dart';
 class OrderDetailsBottomActionWidget extends StatelessWidget {
   final String? orderStatus;
   final VoidCallback? onAcceptTap;
+  final VoidCallback? onRejectTap;
   final VoidCallback? onReadyTap;
   final bool isLoading;
+  final String? updatingStatus;
 
   const OrderDetailsBottomActionWidget({
     super.key,
     required this.orderStatus,
     this.onAcceptTap,
+    this.onRejectTap,
     this.onReadyTap,
     this.isLoading = false,
+    this.updatingStatus,
   });
 
   static bool shouldShow(String? status) {
@@ -67,60 +71,125 @@ class OrderDetailsBottomActionWidget extends StatelessWidget {
 
   Widget _buildButton(BuildContext context, String status) {
     if (status == 'PENDING' || status == 'NEW' || status == 'PLACED') {
-      // 1. PENDING -> Active ACCEPT & PREPARE button
-      return GestureDetector(
-        onTap: isLoading ? null : onAcceptTap,
-        behavior: HitTestBehavior.opaque,
-        child: Container(
-          width: double.infinity,
-          height: 48.h,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [AppColor.primary, AppColor.darkOrange],
-            ),
-            borderRadius: BorderRadius.circular(16.r),
-            boxShadow: [
-              BoxShadow(
-                color: AppColor.primary.withValues(alpha: 0.35),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: isLoading
-              ? const Center(
-                  child: SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.4,
-                      color: AppColor.pureWhite,
-                    ),
+      final isRejectLoading = isLoading && updatingStatus == 'REJECTED';
+      final isAcceptLoading = isLoading && updatingStatus != 'REJECTED';
+
+      // 1. PENDING -> Active REJECT & ACCEPT buttons
+      return Row(
+        children: [
+          // Reject Button
+          Expanded(
+            flex: 2,
+            child: GestureDetector(
+              onTap: isLoading ? null : onRejectTap,
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                height: 48.h,
+                decoration: BoxDecoration(
+                  color: AppColor.statusCancelledBg,
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(
+                    color: AppColor.statusCancelled.withValues(alpha: 0.5),
+                    width: 1.r,
                   ),
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.restaurant_rounded,
-                      size: 18.r,
-                      color: AppColor.pureWhite,
-                    ),
-                    8.wS,
-                    Text(
-                      'ACCEPT & PREPARE',
-                      style: AppFont.style(
-                        color: AppColor.pureWhite,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
+                ),
+                child: isRejectLoading
+                    ? const Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.2,
+                            color: AppColor.statusCancelled,
+                          ),
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.close_rounded,
+                            size: 18.r,
+                            color: AppColor.statusCancelled,
+                          ),
+                          6.wS,
+                          Text(
+                            'REJECT',
+                            style: AppFont.style(
+                              color: AppColor.statusCancelled,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
                       ),
+              ),
+            ),
+          ),
+          12.wS,
+          // Accept & Prepare Button
+          Expanded(
+            flex: 3,
+            child: GestureDetector(
+              onTap: isLoading ? null : onAcceptTap,
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                height: 48.h,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [AppColor.primary, AppColor.darkOrange],
+                  ),
+                  borderRadius: BorderRadius.circular(16.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColor.primary.withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-        ),
+                child: isAcceptLoading
+                    ? const Center(
+                        child: SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.4,
+                            color: AppColor.pureWhite,
+                          ),
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.restaurant_rounded,
+                            size: 18.r,
+                            color: AppColor.pureWhite,
+                          ),
+                          8.wS,
+                          Flexible(
+                            child: Text(
+                              'ACCEPT & PREPARE',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppFont.style(
+                                color: AppColor.pureWhite,
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ),
+        ],
       );
     } else if (status == 'PREPARING' || status == 'COOKING') {
       // 2. PREPARING -> Inactive READY FOR PICKUP button

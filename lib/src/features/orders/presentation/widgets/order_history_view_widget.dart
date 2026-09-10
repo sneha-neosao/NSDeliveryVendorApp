@@ -7,6 +7,7 @@ import '../../../../core/theme/app_color.dart';
 import '../../../../remote/models/order_history_model/order_history_response.dart';
 import '../../../../routes/app_route_path.dart';
 import '../../bloc/order_history_bloc/order_history_bloc.dart';
+import '../../domain/models/order_invoice_params.dart';
 import 'order_empty_state_widget.dart';
 import 'order_history_card_widget.dart';
 import 'order_history_shimmer_widget.dart';
@@ -229,6 +230,17 @@ class _HistoryListView extends StatelessWidget {
           onTap: () {
             if (item.uuId != null && item.uuId!.isNotEmpty) {
               context.push(AppRoute.orderDetails.path, extra: item.uuId);
+            }
+          },
+          onInvoiceTap: () {
+            if (item.uuId != null && item.uuId!.isNotEmpty) {
+              context.push(
+                AppRoute.orderInvoice.path,
+                extra: OrderInvoiceParams(
+                  orderUuid: item.uuId!,
+                  orderId: (item.id ?? '').toString(),
+                ),
+              );
             }
           },
         );

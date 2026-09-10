@@ -5,18 +5,18 @@ import '../../../../core/extensions/integer_sizedbox_extension.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_font.dart';
 
-class OrderDetailsHeaderWidget extends StatelessWidget {
+class OrderInvoiceHeaderWidget extends StatelessWidget {
   final String title;
   final String? subtitle;
   final VoidCallback? onBackTap;
-  final VoidCallback? onInvoiceTap;
+  final VoidCallback? onRefreshTap;
 
-  const OrderDetailsHeaderWidget({
+  const OrderInvoiceHeaderWidget({
     super.key,
-    this.title = 'Order Details',
+    required this.title,
     this.subtitle,
     this.onBackTap,
-    this.onInvoiceTap,
+    this.onRefreshTap,
   });
 
   @override
@@ -75,7 +75,7 @@ class OrderDetailsHeaderWidget extends StatelessWidget {
           ),
           12.wS,
 
-          // Center Title + Subtitle
+          // Center Title (ORD_<order_id>) + Subtitle
           Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -97,6 +97,7 @@ class OrderDetailsHeaderWidget extends StatelessWidget {
                     subtitle!,
                     textAlign: TextAlign.center,
                     softWrap: true,
+                    overflow: TextOverflow.ellipsis,
                     style: AppFont.style(
                       color: AppColor.pureWhite.withValues(alpha: 0.85),
                       fontSize: 12.sp,
@@ -109,10 +110,10 @@ class OrderDetailsHeaderWidget extends StatelessWidget {
           ),
           12.wS,
 
-          // Right Spacer or Invoice Action to balance the back button
-          if (onInvoiceTap != null)
+          // Right Refresh / Balance Action
+          if (onRefreshTap != null)
             GestureDetector(
-              onTap: onInvoiceTap,
+              onTap: onRefreshTap,
               behavior: HitTestBehavior.opaque,
               child: Container(
                 width: 38.r,
@@ -122,7 +123,7 @@ class OrderDetailsHeaderWidget extends StatelessWidget {
                   color: AppColor.pureWhite.withValues(alpha: 0.2),
                 ),
                 child: Icon(
-                  Icons.receipt_long_rounded,
+                  Icons.refresh_rounded,
                   color: AppColor.pureWhite,
                   size: 18.r,
                 ),

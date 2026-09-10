@@ -10,9 +10,11 @@ class OngoingOrderCardWidget extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onPrimaryActionTap;
   final VoidCallback? onAcceptTap;
+  final VoidCallback? onRejectTap;
   final VoidCallback? onReadyTap;
   final VoidCallback? onDownloadTap;
   final bool isActionLoading;
+  final bool isRejectLoading;
 
   const OngoingOrderCardWidget({
     super.key,
@@ -20,9 +22,11 @@ class OngoingOrderCardWidget extends StatelessWidget {
     this.onTap,
     this.onPrimaryActionTap,
     this.onAcceptTap,
+    this.onRejectTap,
     this.onReadyTap,
     this.onDownloadTap,
     this.isActionLoading = false,
+    this.isRejectLoading = false,
   });
 
   @override
@@ -303,64 +307,132 @@ class OngoingOrderCardWidget extends StatelessWidget {
     final s = status.toUpperCase();
 
     if (s == 'PENDING' || s == 'NEW' || s == 'PLACED') {
-      // 1. PENDING -> Active ACCEPT & PREPARE button
+      // 1. PENDING -> Active REJECT & ACCEPT buttons
       return Padding(
         padding: EdgeInsets.only(top: 12.h),
-        child: GestureDetector(
-          onTap: isActionLoading
-              ? null
-              : (onAcceptTap ?? onPrimaryActionTap ?? onTap),
-          behavior: HitTestBehavior.opaque,
-          child: Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(vertical: 11.h),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [AppColor.primary, AppColor.darkOrange],
-              ),
-              borderRadius: BorderRadius.circular(14.r),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColor.primary.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: isActionLoading
-                ? Center(
-                    child: SizedBox(
-                      width: 20.r,
-                      height: 20.r,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2.2,
-                        color: AppColor.pureWhite,
-                      ),
+        child: Row(
+          children: [
+            // Reject Button
+            Expanded(
+              flex: 2,
+              child: GestureDetector(
+                onTap: isActionLoading ? null : onRejectTap,
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 11.h),
+                  decoration: BoxDecoration(
+                    color: AppColor.statusCancelledBg,
+                    borderRadius: BorderRadius.circular(14.r),
+                    border: Border.all(
+                      color: AppColor.statusCancelled.withValues(alpha: 0.5),
+                      width: 1.r,
                     ),
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.restaurant_rounded,
-                        size: 16.r,
-                        color: AppColor.pureWhite,
-                      ),
-                      8.wS,
-                      Text(
-                        'ACCEPT & PREPARE',
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              color: AppColor.pureWhite,
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.5,
+                  ),
+                  child: isRejectLoading
+                      ? Center(
+                          child: SizedBox(
+                            width: 18.r,
+                            height: 18.r,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 2.2,
+                              color: AppColor.statusCancelled,
                             ),
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.close_rounded,
+                              size: 16.r,
+                              color: AppColor.statusCancelled,
+                            ),
+                            6.wS,
+                            Text(
+                              'REJECT',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall
+                                  ?.copyWith(
+                                    color: AppColor.statusCancelled,
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.5,
+                                  ),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+            ),
+            10.wS,
+            // Accept & Prepare Button
+            Expanded(
+              flex: 3,
+              child: GestureDetector(
+                onTap: isActionLoading
+                    ? null
+                    : (onAcceptTap ?? onPrimaryActionTap ?? onTap),
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 11.h),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [AppColor.primary, AppColor.darkOrange],
+                    ),
+                    borderRadius: BorderRadius.circular(14.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColor.primary.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
                       ),
                     ],
                   ),
-          ),
+                  child: (isActionLoading && !isRejectLoading)
+                      ? Center(
+                          child: SizedBox(
+                            width: 20.r,
+                            height: 20.r,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 2.2,
+                              color: AppColor.pureWhite,
+                            ),
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.restaurant_rounded,
+                              size: 16.r,
+                              color: AppColor.pureWhite,
+                            ),
+                            8.wS,
+                            Flexible(
+                              child: Text(
+                                'ACCEPT & PREPARE',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleSmall
+                                    ?.copyWith(
+                                      color: AppColor.pureWhite,
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.5,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+            ),
+          ],
         ),
       );
     } else if (s == 'PREPARING' || s == 'COOKING') {

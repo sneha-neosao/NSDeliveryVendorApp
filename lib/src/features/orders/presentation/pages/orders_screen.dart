@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../configs/injector/injector.dart';
 import '../../../../configs/injector/injector_conf.dart';
 import '../../../../core/extensions/integer_sizedbox_extension.dart';

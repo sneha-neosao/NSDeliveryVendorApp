@@ -10,6 +10,7 @@ import '../models/offers_model/offer_create_response.dart';
 import '../../features/offers/domain/offer_create_usecase.dart';
 import '../../configs/injector/injector.dart';
 import '../../core/constants/error_message.dart';
+import '../models/dashboard_model/revenue_analytics_response.dart';
 
 sealed class RemoteDataSource {
 
@@ -59,6 +60,8 @@ sealed class RemoteDataSource {
   Future<SummaryStatsResponse> DashboardSummaryStats(String token);
 
   Future<PerformanceMetricsResponse> DashboardPerformanceMetrics(String token);
+
+  Future<RevenueAnalyticsResponse> DashboardRevenueAnalytics(String token);
 
   Future<OffersListResponse> OffersList(String token, OffersListParams params);
 
@@ -642,6 +645,36 @@ class RemoteDataSourceImpl implements RemoteDataSource {
       );
 
       final respData = PerformanceMetricsResponse.fromJson(response);
+      return respData;
+    } on EmptyException {
+      throw AuthException();
+    } catch (e) {
+      logger.e(e);
+      if (e.toString() == noElement) {
+        throw AuthException();
+      }
+      if (e is ApiException) {
+        rethrow;
+      }
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<RevenueAnalyticsResponse> DashboardRevenueAnalytics(
+      String token) async {
+    try {
+      final response = await _helper.execute(
+        method: Method.get,
+        url: ApiUrl.dashboardRevenueAnalytics,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      final respData = RevenueAnalyticsResponse.fromJson(response);
       return respData;
     } on EmptyException {
       throw AuthException();

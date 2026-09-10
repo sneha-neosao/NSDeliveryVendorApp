@@ -12,3 +12,5 @@ export '../features/settings/presentation/pages/change_password_screen.dart';
 export '../features/login/presentation/pages/forgot_password_screen.dart';
 export '../features/settings/presentation/pages/edit_profile_screen.dart';
 export '../features/offers/presentation/pages/create_offers_screen.dart';
+export '../features/orders/presentation/pages/order_invoice_screen.dart';
+export '../features/orders/domain/models/order_invoice_params.dart';

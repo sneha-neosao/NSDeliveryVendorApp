@@ -7,10 +7,12 @@ import '../../../../remote/models/order_details_model/order_details_response.dar
 
 class OrderDetailsStatusCardWidget extends StatelessWidget {
   final OrderDetailsData order;
+  final VoidCallback? onInvoiceTap;
 
   const OrderDetailsStatusCardWidget({
     super.key,
     required this.order,
+    this.onInvoiceTap,
   });
 
   @override
@@ -23,7 +25,7 @@ class OrderDetailsStatusCardWidget extends StatelessWidget {
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
         color: AppColor.pureWhite,
-        borderRadius: BorderRadius.circular(18.r),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(
           color: AppColor.border.withValues(alpha: 0.8),
           width: 1.r,
@@ -46,17 +48,21 @@ class OrderDetailsStatusCardWidget extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Container(
-                    width: 32.r,
-                    height: 32.r,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColor.orangeTint2,
-                    ),
-                    child: Icon(
-                      Icons.receipt_long_rounded,
-                      size: 16.r,
-                      color: AppColor.primary,
+                  GestureDetector(
+                    onTap: onInvoiceTap,
+                    behavior: HitTestBehavior.opaque,
+                    child: Container(
+                      width: 32.r,
+                      height: 32.r,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColor.orangeTint2,
+                      ),
+                      child: Icon(
+                        Icons.receipt_long_rounded,
+                        size: 16.r,
+                        color: AppColor.primary,
+                      ),
                     ),
                   ),
                   8.wS,

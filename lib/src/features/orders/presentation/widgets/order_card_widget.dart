@@ -35,12 +35,14 @@ class OrderCardWidget extends StatelessWidget {
   final OrderCardItemData order;
   final VoidCallback? onTap;
   final VoidCallback? onPrimaryActionTap;
+  final VoidCallback? onDownloadTap;
 
   const OrderCardWidget({
     super.key,
     required this.order,
     this.onTap,
     this.onPrimaryActionTap,
+    this.onDownloadTap,
   });
 
   @override
@@ -119,22 +121,26 @@ class OrderCardWidget extends StatelessWidget {
                       children: [
                         _buildStatusChip(context, order.status),
                         8.wS,
-                        Container(
-                          width: 32.r,
-                          height: 32.r,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColor.orangeTint2,
-                            border: Border.all(
-                              color: AppColor.primary.withValues(alpha: 0.25),
-                              width: 1.r,
+                        GestureDetector(
+                          onTap: onDownloadTap ?? () {},
+                          behavior: HitTestBehavior.opaque,
+                          child: Container(
+                            width: 32.r,
+                            height: 32.r,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColor.orangeTint2,
+                              border: Border.all(
+                                color: AppColor.primary.withValues(alpha: 0.25),
+                                width: 1.r,
+                              ),
                             ),
-                          ),
-                          child: Center(
-                            child: Icon(
-                              Icons.receipt_long_rounded,
-                              size: 16.r,
-                              color: AppColor.primary,
+                            child: Center(
+                              child: Icon(
+                                Icons.receipt_long_rounded,
+                                size: 16.r,
+                                color: AppColor.primary,
+                              ),
                             ),
                           ),
                         ),

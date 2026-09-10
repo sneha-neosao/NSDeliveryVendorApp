@@ -71,6 +71,14 @@ class AppRouteConf {
           return _fadePage(const CreateOffersScreen());
         },
       ),
+      GoRoute(
+        path: AppRoute.orderInvoice.path,
+        name: AppRoute.orderInvoice.name,
+        pageBuilder: (context, state) {
+          final params = state.extra as OrderInvoiceParams?;
+          return _fadePage(OrderInvoiceScreen(params: params));
+        },
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainScreen(navigationShell: navigationShell);

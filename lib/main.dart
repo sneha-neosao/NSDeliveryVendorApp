@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -12,6 +13,7 @@ import 'package:nsdelivery_vendor_app/src/core/constants/list_translation_locale
 import 'package:nsdelivery_vendor_app/src/core/services/notification_service.dart';
 import 'package:nsdelivery_vendor_app/src/core/session/session_manager.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:tanstack_query/tanstack_query.dart';
 
 const AndroidNotificationChannel channel = AndroidNotificationChannel(
@@ -70,6 +72,18 @@ Future<void> main() async {
   LocationPermission permission = await Geolocator.checkPermission();
   if (permission == LocationPermission.denied) {
     await Geolocator.requestPermission();
+  }
+
+  // ✅ Request permissions required for PDF download (Storage & Notifications)
+  if (!kIsWeb && Platform.isAndroid) {
+    try {
+      await [
+        Permission.storage,
+        Permission.notification,
+      ].request();
+    } catch (e) {
+      print("⚠️ PDF download permissions request error: $e");
+    }
   }
 
   // ✅ Get the FCM token

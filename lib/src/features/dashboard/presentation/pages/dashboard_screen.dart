@@ -18,12 +18,14 @@ import '../../../login/bloc/update_firebase_token_bloc/update_firebase_token_blo
 import '../../../settings/bloc/profile_bloc/profile_bloc.dart';
 import '../../../splash/bloc/app_version_bloc/app_version_bloc.dart';
 import '../../bloc/performance_metrics_bloc/performance_metrics_bloc.dart';
+import '../../bloc/revenue_analytics_bloc/revenue_analytics_bloc.dart';
 import '../../bloc/summary_stats_bloc/summary_stats_bloc.dart';
 import '../widgets/app_update_dialog.dart';
 import '../widgets/dashboard_header_widget.dart';
 import '../widgets/order_performance_widget.dart';
 import '../widgets/overview_card_widget.dart';
 import '../widgets/top_products_widget.dart';
+import '../widgets/weekly_business_movement_widget.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -179,6 +181,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               getIt<PerformanceMetricsBloc>()..add(FetchPerformanceMetricsEvent()),
         ),
         BlocProvider(
+          create: (_) =>
+              getIt<RevenueAnalyticsBloc>()..add(FetchRevenueAnalyticsEvent()),
+        ),
+        BlocProvider(
           create: (_) => getIt<UpdateFirebaseTokenBloc>(),
         ),
         BlocProvider(
@@ -251,6 +257,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             .read<PerformanceMetricsBloc>()
                             .add(FetchPerformanceMetricsEvent());
                         blocContext
+                            .read<RevenueAnalyticsBloc>()
+                            .add(FetchRevenueAnalyticsEvent());
+                        blocContext
                             .read<AppVersionBloc>()
                             .add(FetchAppVersionEvent());
                         _updateFirebaseToken(blocContext);
@@ -304,7 +313,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                             18.hS,
 
-                            // 2. Order Performance & Top Products
+                            // 2. Weekly Business Movement (Revenue Analytics)
+                            BlocBuilder<RevenueAnalyticsBloc,
+                                RevenueAnalyticsState>(
+                              builder: (context, state) {
+                                final isLoading =
+                                    state is RevenueAnalyticsLoadingState;
+                                final isFailure =
+                                    state is RevenueAnalyticsFailureState;
+                                final data =
+                                    state is RevenueAnalyticsSuccessState
+                                        ? state.data.data
+                                        : null;
+
+                                return WeeklyBusinessMovementWidget(
+                                  isLoading: isLoading,
+                                  analytics: data,
+                                  errorMessage: isFailure
+                                      ? (state as RevenueAnalyticsFailureState).message
+                                      : null,
+                                  onRetryTap: () {
+                                    blocContext
+                                        .read<RevenueAnalyticsBloc>()
+                                        .add(FetchRevenueAnalyticsEvent());
+                                  },
+                                );
+                              },
+                            ),
+                            18.hS,
+
+                            // 3. Order Performance & Top Products
                             BlocBuilder<PerformanceMetricsBloc,
                                 PerformanceMetricsState>(
                               builder: (context, state) {
